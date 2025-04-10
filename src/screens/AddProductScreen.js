@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SectionList, StyleSheet, Alert, ImageBackground } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert 
+} from 'react-native';
+import { useProducts } from '../context/ProductsContext';
 
-export default function App() {
-  const [products, setProducts] = useState([]);
+export default function AddProductScreen() {
+  const { addProduct } = useProducts();
+
+  const [storeName, setStoreName] = useState('');
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [filterStore, setFilterStore] = useState('');
-  const [filterPrice, setFilterPrice] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [description, setDescription] = useState(''); // Новое состояние для описания
 
-  const addProduct = () => {
+  const handleAddProduct = () => {
     if (!productName || !storeName) {
       Alert.alert("Błąd", "Podaj nazwę produktu i sklep.");
       return;
@@ -29,219 +36,123 @@ export default function App() {
       price,
       store: storeName,
       bought: false,
+      image: imageUrl ? imageUrl : "",
+      description: description ? description : "", // Добавляем описание
     };
 
-    setProducts([newProduct, ...products]);
+    addProduct(newProduct);
+    // Сброс значений полей после успешного добавления
+    setStoreName('');
     setProductName('');
     setProductPrice('');
-    setStoreName('');
-    setFiltersVisible(true); 
+    setImageUrl('');
+    setDescription('');
   };
-
-  const toggleBought = () => {
-    if (!selectedProduct) return;
-
-    setProducts(prevProducts => {
-      const updatedProducts = prevProducts.map(p =>
-        p.id === selectedProduct ? { ...p, bought: true } : p
-      );
-      return [...updatedProducts.filter(p => !p.bought), ...updatedProducts.filter(p => p.bought)];
-    });
-
-    setSelectedProduct(null);
-  };
-
-  const deleteProduct = (id) => {
-    setProducts(prevProducts => {
-      const newProducts = prevProducts.filter(p => p.id !== id);
-      if (newProducts.length === 0) setFiltersVisible(false);
-      return newProducts;
-    });
-    if (selectedProduct === id) setSelectedProduct(null);
-  };
-
-  const filteredProducts = products.filter(p => 
-    (!filterStore || p.store.toLowerCase().includes(filterStore.toLowerCase())) &&
-    (!filterPrice || (!isNaN(parseFloat(filterPrice.replace(',', '.'))) && p.price === parseFloat(filterPrice.replace(',', '.'))))
-  );
-
-  const groupedProducts = filteredProducts.reduce((acc, product) => {
-    const section = acc.find(s => s.store === product.store);
-    if (section) {
-      section.data.push(product);
-    } else {
-      acc.push({ store: product.store, data: [product] });
-    }
-    return acc;
-  }, []);
 
   return (
-
-      <View style={styles.container}>
-        <Text style={styles.title}></Text>
-
-        {filtersVisible && (
-          <>
-            <TextInput 
-              style={styles.input} 
-              placeholder="Filtruj po sklepie..." 
-              value={filterStore} 
-              onChangeText={setFilterStore} 
-              placeholderTextColor="#ccc" 
-            />
-            <TextInput 
-              style={styles.input} 
-              placeholder="Filtruj po cenie (zł)..." 
-              value={filterPrice} 
-              onChangeText={setFilterPrice} 
-              keyboardType="numeric" 
-              placeholderTextColor="#ccc" 
-            />
-          </>
-        )}
-
-        <TextInput 
-          style={styles.input} 
-          placeholder="Sklep..." 
-          value={storeName} 
-          onChangeText={setStoreName} 
-          placeholderTextColor="#ccc" 
-        />
-        <TextInput 
-          style={styles.input} 
-          placeholder="Nazwa produktu..." 
-          value={productName} 
-          onChangeText={setProductName} 
-          placeholderTextColor="#ccc" 
-        />
-        <TextInput 
-          style={styles.input} 
-          placeholder="Cena (zł)..." 
-          value={productPrice} 
-          onChangeText={setProductPrice} 
-          keyboardType="numeric" 
-          placeholderTextColor="#ccc" 
-        />
-        <Text style={styles.hint}>Podaj cenę jako liczbę, np. 12.99</Text>
-
-        <TouchableOpacity 
-          style={[styles.button, (!productName || !productPrice || !storeName) && styles.buttonDisabled]} 
-          onPress={addProduct} 
-          disabled={!productName || !productPrice || !storeName}
-        >
-          <Text style={styles.buttonText}>Dodaj towar</Text>
-        </TouchableOpacity>
-
-        <SectionList
-          sections={groupedProducts}
-          keyExtractor={item => item.id}
-          renderSectionHeader={({ section: { store } }) => <Text style={styles.sectionTitle}>{store}</Text>}
-          renderItem={({ item }) => (
-            <TouchableOpacity 
-              style={[styles.item, item.bought && styles.bought, selectedProduct === item.id && styles.selected]} 
-              onPress={() => !item.bought && setSelectedProduct(item.id)}
-            >
-              <Text style={styles.itemText}>{item.bought ? '✔ ' : ''}{item.name} - {item.price} zł</Text>
-              <TouchableOpacity onPress={() => deleteProduct(item.id)}>
-                <Text style={styles.trashIcon}>🗑️</Text>
-              </TouchableOpacity>
-            </TouchableOpacity>
-          )}
-        />
-
-        <TouchableOpacity 
-          style={[styles.button, !selectedProduct && styles.buttonDisabled]} 
-          onPress={toggleBought} 
-          disabled={!selectedProduct}
-        >
-          <Text style={styles.buttonText}>Kupić towar</Text>
-        </TouchableOpacity>
-      </View>
-
+    <View style={styles.container}>
+      <Text style={styles.title}>Dodaj produkt</Text>
+      
+      <TextInput 
+        style={styles.input} 
+        placeholder="Sklep..." 
+        value={storeName} 
+        onChangeText={setStoreName} 
+        placeholderTextColor="#ccc" 
+      />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Nazwa produktu..." 
+        value={productName} 
+        onChangeText={setProductName} 
+        placeholderTextColor="#ccc" 
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="URL obrazka (opcjonalnie)..."
+        value={imageUrl}
+        onChangeText={setImageUrl}
+        placeholderTextColor="#ccc"
+      />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Cena (zł)..." 
+        value={productPrice} 
+        onChangeText={setProductPrice} 
+        keyboardType="numeric" 
+        placeholderTextColor="#ccc" 
+      />
+      {/* Новое поле для ввода описания продукта */}
+      <TextInput
+        style={[styles.input, styles.descriptionInput]}
+        placeholder="Opis produktu (opcjonalnie)..."
+        value={description}
+        onChangeText={setDescription}
+        placeholderTextColor="#ccc"
+        multiline={true}
+      />
+      <Text style={styles.hint}>Podaj cenę jako liczbę, np. 12.99</Text>
+      
+      <TouchableOpacity 
+        style={[styles.button, (!productName || !productPrice || !storeName) && styles.buttonDisabled]} 
+        onPress={handleAddProduct} 
+        disabled={!productName || !productPrice || !storeName}
+      >
+        <Text style={styles.buttonText}>Dodaj produkt</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
   container: { 
-    flex: 1, 
+    flex: 1,
     backgroundColor: '#1c1c1c',
-    padding: 20, 
-    alignItems: 'center' 
+    padding: 20,
+    alignItems: 'center'
   },
   title: { 
-    fontSize: 30, 
-    fontWeight: 'bold', 
-    marginBottom: 20, 
-    color: '#00ff99', 
-    textAlign: 'center' 
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#00ff99',
+    textAlign: 'center'
   },
   input: { 
-    width: '80%', 
-    borderWidth: 1, 
-    borderColor: '#00ff99', 
-    padding: 12, 
-    borderRadius: 10, 
-    backgroundColor: '#333', 
-    color: '#fff', 
-    fontSize: 16, 
-    marginBottom: 10, 
-    textAlign: 'center' 
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#00ff99',
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#333',
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: 'center'
   },
-  hint: { 
-    fontSize: 12, 
-    color: '#bbb', 
-    marginBottom: 10 
+  descriptionInput: {
+    height: 80, // даём больше высоты для многострочного ввода
+    textAlignVertical: 'top'
   },
-  sectionTitle: { 
-    fontSize: 22, 
-    color: '#00ff99', 
-    fontWeight: 'bold', 
-    marginTop: 20, 
-    marginBottom: 10 
-  },
-  item: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    padding: 15, 
-    borderBottomWidth: 1, 
-    width: '80%', 
-    borderRadius: 12, 
-    backgroundColor: '#222', 
-    marginBottom: 12 
-  },
-  bought: { 
-    backgroundColor: '#00cc66' 
-  },
-  selected: { 
-    backgroundColor: '#00cc66' 
-  },
-  itemText: { 
-    fontSize: 18, 
-    color: '#fff', 
-    flex: 1 
-  },
-  trashIcon: { 
-    fontSize: 20, 
-    color: '#F44336' 
+  hint: {
+    fontSize: 12,
+    color: '#bbb',
+    marginBottom: 10
   },
   button: { 
-    width: '80%', 
-    padding: 15, 
-    backgroundColor: '#00ff99', 
-    borderRadius: 12, 
-    marginVertical: 10, 
-    alignItems: 'center' 
+    width: '80%',
+    padding: 15,
+    backgroundColor: '#00ff99',
+    borderRadius: 12,
+    marginVertical: 10,
+    alignItems: 'center'
   },
-  buttonDisabled: { 
-    backgroundColor: '#555' 
+  buttonDisabled: {
+    backgroundColor: '#555'
   },
   buttonText: { 
-    fontSize: 18, 
-    color: '#1a1a1a', 
-    fontWeight: 'bold' 
-  },
+    fontSize: 18,
+    color: '#1a1a1a',
+    fontWeight: 'bold'
+  }
 });
