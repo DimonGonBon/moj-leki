@@ -1,17 +1,17 @@
-// App.js
+
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
-// Импорт экранов
-import HomeStack from './src/screens/HomeStack'; // Оборачивает HomeScreen с видимым header и кнопкой "Wyloguj"
+
+import HomeStack from './src/screens/HomeStack';
 import AddProductScreen from './src/screens/AddProductScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 
-// Импорт контекстов
+
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ProductsProvider } from './src/context/ProductsContext';
 
@@ -30,7 +30,7 @@ function MainTabs() {
         },
         tabBarActiveTintColor: '#00cc66',
         tabBarInactiveTintColor: 'gray',
-        headerShown: false, // Заголовок для Tab Navigator не нужен, т.к. HomeStack предоставляет свой header
+        headerShown: false, 
       })}
     >
       <Tab.Screen name="Home" component={HomeStack} />
