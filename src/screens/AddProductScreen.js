@@ -16,7 +16,7 @@ export default function AddProductScreen() {
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [description, setDescription] = useState(''); // Новое состояние для описания
+  const [description, setDescription] = useState('');
 
   const handleAddProduct = () => {
     if (!productName || !storeName) {
@@ -37,11 +37,11 @@ export default function AddProductScreen() {
       store: storeName,
       bought: false,
       image: imageUrl ? imageUrl : "",
-      description: description ? description : "", // Добавляем описание
+      description: description ? description : "",
     };
 
     addProduct(newProduct);
-    // Сброс значений полей после успешного добавления
+
     setStoreName('');
     setProductName('');
     setProductPrice('');
@@ -82,7 +82,6 @@ export default function AddProductScreen() {
         keyboardType="numeric" 
         placeholderTextColor="#ccc" 
       />
-      {/* Новое поле для ввода описания продукта */}
       <TextInput
         style={[styles.input, styles.descriptionInput]}
         placeholder="Opis produktu (opcjonalnie)..."
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   descriptionInput: {
-    height: 80, // даём больше высоты для многострочного ввода
+    height: 80,
     textAlignVertical: 'top'
   },
   hint: {

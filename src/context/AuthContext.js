@@ -1,10 +1,9 @@
-// src/context/AuthContext.js
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
-  // По умолчанию пользователь НЕ авторизован (false)
   const [isLoggedIn, setLoggedIn] = useState(false);
 
   const login = () => {
@@ -17,7 +16,6 @@ export const AuthProvider = ({ children }) => {
     setLoggedIn(false);
   };
 
-  // Отладочный эффект, который выводит текущее состояние авторизации
   useEffect(() => {
     console.log('Auth state changed, isLoggedIn:', isLoggedIn);
   }, [isLoggedIn]);

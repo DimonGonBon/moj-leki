@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 
 export default function ProductDetailsScreen({ route }) {
   const { product } = route.params;
-  console.log("Product details:", product); // Для проверки, что описание передаётся
+  console.log("Product details:", product); 
 
   return (
     <View style={styles.container}>

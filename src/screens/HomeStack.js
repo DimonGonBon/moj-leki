@@ -23,9 +23,7 @@ export default function HomeStack() {
         component={HomeScreen}
         options={{
           title: 'Lista Zakupów',
-          // Гарантируем, что слева ничего не отображается
           headerLeft: () => null,
-          // Кнопка выхода только справа
           headerRight: () => (
             <TouchableOpacity
               onPress={() => {
