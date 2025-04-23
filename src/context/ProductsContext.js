@@ -36,7 +36,7 @@ export const ProductsProvider = ({ children }) => {
   };
 
   const updateProduct = (id, updatedFields) => {
-    console.log("Обновление товара, id:", id, "новые поля:", updatedFields);
+    console.log("Reset towaru, id:", id, "Nowe pola:", updatedFields);
     setProducts(prevProducts =>
       prevProducts.map(p => (p.id === id ? { ...p, ...updatedFields } : p))
     );
