@@ -52,7 +52,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Popularne produkty</Text>
+      <Text style={styles.title}>Produkty</Text>
       <FlatList 
         data={products} 
         keyExtractor={(item) => item.id} 
