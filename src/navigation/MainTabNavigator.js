@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import AddProductScreen from './screens/AddProductScreen';
 import ProductDetailsScreen from './screens/ProductDetailsScreen';
@@ -15,6 +15,7 @@ const Stack = createStackNavigator();
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Register" component={RegisterScreen} />
   </Stack.Navigator>
 );
 
@@ -31,7 +32,7 @@ const AppStack = () => (
       options={{ title: 'Dodaj produkt' }}
     />
     <Stack.Screen
-      name="ProductыDetails"
+      name="ProductDetails"
       component={ProductDetailsScreen}
       options={{ title: 'Szczegóły produktu' }}
     />
@@ -39,7 +40,10 @@ const AppStack = () => (
 );
 
 export default function Navigation() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
+  console.log('Navigation, isLoggedIn:', isLoggedIn, 'loading:', loading);
+
+  if (loading) return <LoadingScreen />; // Можно заменить на <LoadingScreen /> или спиннер
 
   return (
     <NavigationContainer>

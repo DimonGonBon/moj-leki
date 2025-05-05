@@ -2,26 +2,26 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
-export default function LoginScreen({ navigation }) {
-  const { login } = useAuth();
+export default function RegisterScreen({ navigation }) {
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!email || !password) {
       Alert.alert('Błąd', 'Wprowadź email i hasło');
       return;
     }
 
-    const { error } = await login(email, password);
+    const { error } = await register(email, password);
     if (error) {
-      Alert.alert('Błąd logowania', error.message);
+      Alert.alert('Błąd rejestracji', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Zaloguj się</Text>
+      <Text style={styles.title}>Zarejestruj się</Text>
 
       <TextInput
         style={styles.input}
@@ -41,12 +41,12 @@ export default function LoginScreen({ navigation }) {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Zaloguj</Text>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Zarejestruj</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>Zarejestruj się</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.linkText}>Zaloguj się</Text>
       </TouchableOpacity>
     </View>
   );

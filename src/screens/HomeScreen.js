@@ -1,145 +1,181 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useProducts } from '../context/ProductsContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
-  const { products, updateProduct, deleteProduct } = useProducts();
-  const { logout } = useAuth();
+  const { user } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
 
-  const markAsBought = (id) => {
-    updateProduct(id, { bought: true });
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error.message);
+      Alert.alert('Błąd', 'Nie udało się pobrać produktów');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchProducts();
+    }
+  }, [isFocused]);
+
+  const markAsBought = async (id) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ bought: true })
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (!error) fetchProducts();
+  };
+
+  const deleteProduct = async (id) => {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (!error) fetchProducts();
   };
 
   const renderItem = ({ item }) => (
-    <View style={[styles.productItem, item.bought && styles.bought]}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProductDetails', { product: item })}
-      >
-        <Image
-          source={{
-            uri: item.image && item.image !== "" ? item.image : 'https://via.placeholder.com/60',
-          }}
-          style={styles.productImage}
-        />
-      </TouchableOpacity>
-      <View style={styles.productDetails}>
-        <Text style={[styles.productName, item.bought && styles.boughtText]}>
-          {item.name}
-        </Text>
-        <Text style={[styles.productPrice, item.bought && styles.boughtText]}>
-          {item.price} zł
-        </Text>
-        <Text style={[styles.productStore, item.bought && styles.boughtText]}>
-          {item.store}
-        </Text>
+    <TouchableOpacity 
+      style={[styles.productItem, item.bought && styles.bought]} 
+      onPress={() => navigation.navigate('ProductDetails', { product: item })}
+    >
+      <Image
+        source={{ uri: item.image || 'https://via.placeholder.com/60' }}
+        style={styles.productImage}
+      />
+      <View style={styles.productInfo}>
+        <Text style={[styles.productName, item.bought && styles.boughtText]}>{item.name}</Text>
+        <Text style={[styles.productPrice, item.bought && styles.boughtText]}>{item.price} zł</Text>
+        <Text style={[styles.productStore, item.bought && styles.boughtText]}>{item.store}</Text>
         <View style={styles.actionRow}>
           {!item.bought ? (
             <TouchableOpacity style={styles.buyButton} onPress={() => markAsBought(item.id)}>
               <Text style={styles.buyButtonText}>Kupić</Text>
             </TouchableOpacity>
           ) : (
-            <Text style={styles.alreadyBought}>Kupione</Text>
+            <Text style={styles.boughtTag}>Kupione</Text>
           )}
-          <TouchableOpacity style={styles.deleteButton} onPress={() => deleteProduct(item.id)}>
-            <Ionicons name="trash" size={20} color="#F44336" />
+          <TouchableOpacity onPress={() => deleteProduct(item.id)}>
+            <Ionicons name="trash" size={20} color="#ff4444" />
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
+  
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Produkty</Text>
-      <FlatList 
-        data={products} 
-        keyExtractor={(item) => item.id} 
-        renderItem={renderItem} 
-      />
+      <Text style={styles.title}>Popularne produkty</Text>
+      {loading ? (
+        <Text style={{ color: '#fff', textAlign: 'center' }}>Ładowanie...</Text>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          ListEmptyComponent={<Text style={{ color: '#888' }}>Brak produktów</Text>}
+        />
+      )}
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1c1c1c',
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#00cc66',
+    color: '#00ff99',
+    marginBottom: 10,
     textAlign: 'center',
+  },
+  list: {
+    paddingBottom: 20,
   },
   productItem: {
     flexDirection: 'row',
+    backgroundColor: '#2b2b2b',
+    borderRadius: 12,
+    padding: 10,
+    marginVertical: 8,
     alignItems: 'center',
-    backgroundColor: '#2c2c2c',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
   },
   productImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
   },
-  productDetails: {
+  productInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   productName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
   },
   productPrice: {
-    fontSize: 16,
-    color: '#e0e0e0',
-  },
-  productStore: {
     fontSize: 14,
     color: '#ccc',
   },
-  boughtText: {
-    textDecorationLine: 'line-through',
+  productStore: {
+    fontSize: 12,
     color: '#aaa',
+    marginBottom: 6,
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 10,
     alignItems: 'center',
+    gap: 10,
+    marginTop: 6,
   },
   buyButton: {
-    backgroundColor: '#00cc66',
-    padding: 8,
-    borderRadius: 5,
-    alignItems: 'center',
-    width: 100,
+    backgroundColor: '#00ff99',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   buyButtonText: {
-    fontSize: 16,
-    color: '#1a1a1a',
+    color: '#000',
     fontWeight: 'bold',
   },
-  alreadyBought: {
-    fontSize: 16,
+  boughtText: {
+    color: '#777',
+    textDecorationLine: 'line-through',
+  },
+  boughtTag: {
     color: '#00cc66',
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    marginLeft: 15,
-  },
-  bought: {
-    backgroundColor: '#333',
+    fontStyle: 'italic',
+    fontSize: 12,
   },
 });

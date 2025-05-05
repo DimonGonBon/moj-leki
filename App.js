@@ -10,6 +10,7 @@ import HomeStack from './src/screens/HomeStack';
 import AddProductScreen from './src/screens/AddProductScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
+import RegisterScreen from './src/screens/RegisterScreen'
 
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -62,6 +63,11 @@ function AuthStack() {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

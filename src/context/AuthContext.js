@@ -1,27 +1,72 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = () => {
-    console.log('login called');
-    setLoggedIn(true);
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data.session) {
+      setUser(data.session.user);
+      setLoggedIn(true);
+    } else {
+      console.log('Login error:', error);
+    }
   };
 
-  const logout = () => {
-    console.log('logout called');
+  const register = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.log('Registration error:', error);
+      return { error };
+    }
+
+    return { data };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setLoggedIn(false);
+    setUser(null);
   };
 
   useEffect(() => {
-    console.log('Auth state changed, isLoggedIn:', isLoggedIn);
-  }, [isLoggedIn]);
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setLoggedIn(true);
+        setUser(data.session.user);
+      }
+      setLoading(false);
+    };
+
+    initAuth();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setLoggedIn(true);
+      } else {
+        setUser(null);
+        setLoggedIn(false);
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, register, user, loading }}>
       {children}
     </AuthContext.Provider>
   );
