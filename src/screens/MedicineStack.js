@@ -1,14 +1,15 @@
-// src/screens/HomeStack.js
+// --- src/screens/MedicineStack.js ---
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from './HomeScreen';
+
+import MedicineListScreen from './MedicineListScreen';
 import { useAuth } from '../context/AuthContext';
 
 const Stack = createStackNavigator();
 
-export default function HomeStack() {
+export default function MedicineStack() {
   const { logout } = useAuth();
 
   return (
@@ -19,17 +20,14 @@ export default function HomeStack() {
       }}
     >
       <Stack.Screen
-        name="HomeScreen"
-        component={HomeScreen}
+        name="MedicineList"
+        component={MedicineListScreen}
         options={{
-          title: 'Lista Zakupów',
+          title: 'Moje Leki',
           headerLeft: () => null,
           headerRight: () => (
             <TouchableOpacity
-              onPress={() => {
-                console.log('Logout button pressed');
-                logout();
-              }}
+              onPress={logout}
               style={{ marginRight: 10 }}
             >
               <Ionicons name="log-out" size={24} color="#fff" />

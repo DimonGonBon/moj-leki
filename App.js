@@ -1,20 +1,20 @@
-
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
-
-import HomeStack from './src/screens/HomeStack';
-import AddProductScreen from './src/screens/AddProductScreen';
+import MedicineStack from './src/screens/MedicineStack';
+import AddMedicineScreen from './src/screens/AddMedicineScreen';
+import MedicineDetailsScreen from './src/screens/MedicineDetailsScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
-import RegisterScreen from './src/screens/RegisterScreen'
-
+import RegisterScreen from './src/screens/RegisterScreen';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
-import { ProductsProvider } from './src/context/ProductsContext';
+import { MedicinesProvider } from './src/context/MedicinesContext';
+
+import { useEffect } from 'react';
+import { registerForPushNotificationsAsync } from './src/utils/NotificationService';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -25,17 +25,17 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === 'Home') iconName = 'home';
-          else if (route.name === 'Add') iconName = 'add-circle';
+          if (route.name === 'Leki') iconName = 'medkit';
+          else if (route.name === 'Dodaj') iconName = 'add-circle';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#00cc66',
         tabBarInactiveTintColor: 'gray',
-        headerShown: false, 
+        headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Add" component={AddProductScreen} />
+      <Tab.Screen name="Leki" component={MedicineStack} />
+      <Tab.Screen name="Dodaj" component={AddMedicineScreen} />
     </Tab.Navigator>
   );
 }
@@ -49,9 +49,9 @@ function AppStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="ProductDetails"
-        component={ProductDetailsScreen}
-        options={{ title: 'Szczegóły produktu' }}
+        name="MedicineDetails"
+        component={MedicineDetailsScreen}
+        options={{ title: 'Szczegóły leku' }}
       />
     </Stack.Navigator>
   );
@@ -76,7 +76,6 @@ function AuthStack() {
 
 function RootNavigation() {
   const { isLoggedIn } = useAuth();
-  console.log('RootNavigation, isLoggedIn:', isLoggedIn);
   return (
     <NavigationContainer>
       {isLoggedIn ? <AppStack /> : <AuthStack />}
@@ -85,11 +84,15 @@ function RootNavigation() {
 }
 
 export default function App() {
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
   return (
     <AuthProvider>
-      <ProductsProvider>
+      <MedicinesProvider>
         <RootNavigation />
-      </ProductsProvider>
+      </MedicinesProvider>
     </AuthProvider>
   );
 }
