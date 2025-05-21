@@ -1,6 +1,6 @@
 // --- src/screens/MedicineStack.js ---
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -26,12 +26,11 @@ export default function MedicineStack() {
           title: 'Moje Leki',
           headerLeft: () => null,
           headerRight: () => (
-            <TouchableOpacity
-              onPress={logout}
-              style={{ marginRight: 10 }}
-            >
-              <Ionicons name="log-out" size={24} color="#fff" />
-            </TouchableOpacity>
+            <View style={{ marginRight: 10 }}>
+              <TouchableOpacity onPress={logout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="log-out" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />

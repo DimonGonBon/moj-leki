@@ -38,32 +38,37 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  useEffect(() => {
-    const initAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setLoggedIn(true);
-        setUser(data.session.user);
-      }
-      setLoading(false);
-    };
+useEffect(() => {
+  const initAuth = async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      setLoggedIn(true);
+      setUser(data.session.user);
+    }
+    setLoading(false);
+  };
 
-    initAuth();
+  initAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setLoggedIn(true);
-      } else {
-        setUser(null);
-        setLoggedIn(false);
-      }
-    });
+  const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      setUser(session.user);
+      setLoggedIn(true);
+    } else if (event === 'SIGNED_OUT') {
+      setUser(null);
+      setLoggedIn(false);
+    }
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
+    setLoading(false);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, []);
+
+
+
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout, register, user, loading }}>

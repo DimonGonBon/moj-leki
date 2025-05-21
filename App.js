@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, View } from 'react-native';
 
 import MedicineStack from './src/screens/MedicineStack';
 import AddMedicineScreen from './src/screens/AddMedicineScreen';
 import MedicineDetailsScreen from './src/screens/MedicineDetailsScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import PlanPrzyjecScreen from './src/screens/PlanPrzyjecScreen';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { MedicinesProvider } from './src/context/MedicinesContext';
-
-import { useEffect } from 'react';
 import { registerForPushNotificationsAsync } from './src/utils/NotificationService';
 
 const Tab = createBottomTabNavigator();
@@ -27,6 +27,7 @@ function MainTabs() {
           let iconName;
           if (route.name === 'Leki') iconName = 'medkit';
           else if (route.name === 'Dodaj') iconName = 'add-circle';
+          else if (route.name === 'Plan') iconName = 'calendar';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#00cc66',
@@ -36,6 +37,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Leki" component={MedicineStack} />
       <Tab.Screen name="Dodaj" component={AddMedicineScreen} />
+      <Tab.Screen name="Plan" component={PlanPrzyjecScreen} />
     </Tab.Navigator>
   );
 }
@@ -75,7 +77,16 @@ function AuthStack() {
 }
 
 function RootNavigation() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#00cc66" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       {isLoggedIn ? <AppStack /> : <AuthStack />}

@@ -1,10 +1,24 @@
-// --- src/screens/MedicineListScreen.js ---
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  RefreshControl
+} from 'react-native';
 import { useMedicines } from '../context/MedicinesContext';
 
 export default function MedicineListScreen({ navigation }) {
-  const { medicines } = useMedicines();
+  const { medicines, fetchMedicines } = useMedicines();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchMedicines();
+    setRefreshing(false);
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -31,6 +45,14 @@ export default function MedicineListScreen({ navigation }) {
         keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#00cc66']}
+            tintColor="#00cc66"
+          />
+        }
       />
     </View>
   );

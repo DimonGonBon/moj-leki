@@ -8,7 +8,7 @@ export const MedicinesProvider = ({ children }) => {
   const [medicines, setMedicines] = useState([]);
   const { user } = useAuth();
 
-  // 🔄 Загрузка лекарств с Supabase при входе пользователя
+
   useEffect(() => {
     if (user) {
       fetchMedicines();

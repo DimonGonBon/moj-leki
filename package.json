@@ -31,7 +31,11 @@
     "react-native-web": "~0.19.13",
     "react-redux": "^9.2.0",
     "expo-notifications": "~0.29.14",
-    "@react-native-community/datetimepicker": "8.2.0"
+    "@react-native-community/datetimepicker": "8.2.0",
+    "expo-device": "~7.0.3",
+    "expo-clipboard": "~7.0.1",
+    "expo-sharing": "~13.0.1",
+    "expo-linking": "~7.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

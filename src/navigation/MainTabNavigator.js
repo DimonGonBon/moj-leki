@@ -43,7 +43,7 @@ export default function Navigation() {
   const { isLoggedIn, loading } = useAuth();
   console.log('Navigation, isLoggedIn:', isLoggedIn, 'loading:', loading);
 
-  if (loading) return <LoadingScreen />; // Можно заменить на <LoadingScreen /> или спиннер
+  if (loading) return <LoadingScreen />;
 
   return (
     <NavigationContainer>

@@ -1,40 +1,44 @@
-// --- src/screens/AddMedicineScreen.js ---
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useMedicines } from '../context/MedicinesContext';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../context/AuthContext'; 
+import { useMedicines } from '../context/MedicinesContext'; 
 
 export default function AddMedicineScreen({ navigation }) {
-  const { addMedicine } = useMedicines();
+  const { addMedicine } = useMedicines();  
+  const { user } = useAuth();              
+
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [dose, setDose] = useState('');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleAdd = () => {
-    if (!name || !type || !dose) {
-      Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
-      return;
-    }
 
-    const newMedicine = {
-      id: Date.now().toString(),
-      name,
-      type,
-      dose,
-      taken: false,
-      image,
-      description
-    };
 
-    addMedicine(newMedicine);
-    setName('');
-    setType('');
-    setDose('');
-    setImage('');
-    setDescription('');
-    navigation.goBack();
+const handleAdd = async () => {
+  if (!name || !type || !dose) {
+    Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
+    return;
+  }
+
+  const newMedicine = {
+    name,
+    type,
+    dose,
+    image,
+    description
   };
+
+  await addMedicine(newMedicine);
+
+  setName('');
+  setType('');
+  setDose('');
+  setImage('');
+  setDescription('');
+  navigation.goBack();
+};
 
   return (
     <View style={styles.container}>
