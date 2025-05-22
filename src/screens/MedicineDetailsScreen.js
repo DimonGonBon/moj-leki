@@ -1,5 +1,5 @@
 // --- src/screens/MedicineDetailsScreen.js ---
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -23,58 +23,62 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
   const paramMedicine = navRoute.params?.medicine;
   const paramId = navRoute.params?.id;
 
-  const { medicines } = useMedicines();
+  const { medicines, fetchMedicines } = useMedicines();
+
   const medicine = paramMedicine || medicines.find(m => m.id === paramId);
 
-  const [time, setTime] = useState(new Date(Date.now() + 5 * 60000));
+  const [time, setTime] = useState(
+    medicine?.reminder_time ? new Date(medicine.reminder_time) : new Date(Date.now() + 5 * 60000)
+  );
   const [showPicker, setShowPicker] = useState(false);
+  const [intervalHours, setIntervalHours] = useState(8);
 
-  useEffect(() => {
-    if (medicine?.reminder_time) {
-      const localTime = new Date(medicine.reminder_time);
-      setTime(localTime);
-    }
-  }, [medicine]);
-
-  const handleReminder = async () => {
+  const handleSaveAndNotify = async () => {
     try {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Czas na lek 💊",
           body: "Nie zapomnij przyjąć leku!",
         },
-        trigger: {
-          hour: time.getHours(),
-          minute: time.getMinutes(),
-          repeats: false,
-        },
+        trigger: time,
       });
 
-      Alert.alert(
-        "Przypomnienie ustawione",
-        `Powiadomienie przyjdzie o ${time.toLocaleTimeString()}.`
-      );
+
+      const { error } = await supabase
+        .from('medicines')
+        .update({ reminder_time: time.toISOString() })
+        .eq('id', medicine.id);
+
+      if (error) throw error;
+
+      Alert.alert("Zapisano", `Przypomnienie ustawione na ${time.toLocaleTimeString()}`);
+      fetchMedicines();
     } catch (error) {
-      console.log("Błąd przypomnienia:", error);
+      console.log("Błąd zapisu/przypomnienia:", error);
       Alert.alert("Błąd", "Nie udało się ustawić przypomnienia.");
     }
   };
 
-const handleSaveReminderTime = async () => {
-  const localOffset = time.getTimezoneOffset();
-  const localTime = new Date(time.getTime() - localOffset * 60000);
+  const handleMarkAsTaken = async () => {
+    const nextTime = new Date(time);
+    nextTime.setHours(nextTime.getHours() + intervalHours);
 
-  const { error } = await supabase
-    .from('medicines')
-    .update({ reminder_time: localTime.toISOString() })
-    .eq('id', medicine.id);
+    const { error } = await supabase
+      .from('medicines')
+      .update({ 
+        taken: true,
+        reminder_time: nextTime.toISOString()
+      })
+      .eq('id', medicine.id);
 
-  if (error) {
-    Alert.alert("Błąd", "Nie udało się zapisać przypomnienia.");
-  } else {
-    Alert.alert("Zapisano", `Przypomnienie ustawione na ${localTime.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
-  }
-};
+    if (error) {
+      Alert.alert("Błąd", "Nie udało się zapisać zmiany.");
+    } else {
+      Alert.alert("Zapisano", `Następna dawka o ${nextTime.toLocaleTimeString()}`);
+      fetchMedicines();
+    }
+  };
+
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || time;
     setShowPicker(Platform.OS === 'ios');
@@ -123,16 +127,17 @@ const handleSaveReminderTime = async () => {
           value={time}
           mode="time"
           display="default"
+          is24Hour={true}
           onChange={onChange}
         />
       )}
 
-      <TouchableOpacity onPress={handleReminder} style={styles.button}>
-        <Text style={styles.buttonText}>Ustaw przypomnienie</Text>
+      <TouchableOpacity onPress={handleSaveAndNotify} style={styles.button}>
+        <Text style={styles.buttonText}>Ustaw i zapisz przypomnienie</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleSaveReminderTime} style={styles.button}>
-        <Text style={styles.buttonText}>Zapisz przypomnienie</Text>
+      <TouchableOpacity onPress={handleMarkAsTaken} style={styles.button}>
+        <Text style={styles.buttonText}>Przyjęto</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
