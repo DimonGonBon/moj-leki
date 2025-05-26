@@ -19,6 +19,7 @@ const AuthStack = () => (
   </Stack.Navigator>
 );
 
+
 const AppStack = () => (
   <Stack.Navigator>
     <Stack.Screen

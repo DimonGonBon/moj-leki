@@ -18,6 +18,7 @@ export default function PlanPrzyjecScreen() {
     setRefreshing(false);
   };
 
+  
   const scheduled = medicines
     .filter(med => med.reminder_time)
     .sort((a, b) => new Date(a.reminder_time) - new Date(b.reminder_time));

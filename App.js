@@ -94,6 +94,7 @@ function RootNavigation() {
   );
 }
 
+
 export default function App() {
   useEffect(() => {
     registerForPushNotificationsAsync();

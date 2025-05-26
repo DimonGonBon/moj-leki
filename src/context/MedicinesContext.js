@@ -14,6 +14,7 @@ export const MedicinesProvider = ({ children }) => {
       fetchMedicines();
     }
   }, [user]);
+  
 
   const fetchMedicines = async () => {
     const { data, error } = await supabase

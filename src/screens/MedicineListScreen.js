@@ -20,6 +20,7 @@ export default function MedicineListScreen({ navigation }) {
     setRefreshing(false);
   };
 
+  
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}

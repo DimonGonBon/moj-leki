@@ -23,6 +23,7 @@ export default function RegisterScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Zarejestruj się</Text>
 
+
       <TextInput
         style={styles.input}
         placeholder="Email"

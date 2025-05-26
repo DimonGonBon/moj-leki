@@ -18,6 +18,7 @@ import * as Linking from 'expo-linking';
 import { useRoute } from '@react-navigation/native';
 import { useMedicines } from '../context/MedicinesContext';
 
+
 export default function MedicineDetailsScreen({ route: navRoute }) {
   const route = useRoute();
   const paramMedicine = navRoute.params?.medicine;
