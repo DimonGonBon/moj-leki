@@ -19,6 +19,7 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Zaloguj się</Text>
