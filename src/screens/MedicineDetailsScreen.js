@@ -1,4 +1,3 @@
-// --- src/screens/MedicineDetailsScreen.js ---
 import React, { useState } from 'react';
 import {
   View,
@@ -35,27 +34,45 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
   const [intervalHours, setIntervalHours] = useState(8);
 
   const handleSaveAndNotify = async () => {
+    const now = new Date();
+    const selectedTime = new Date(time); // Копируем, чтобы не менять состояние напрямую
+
+    // Если выбранное время УЖЕ прошло сегодня, переносим на завтра
+    if (selectedTime < now) {
+      selectedTime.setDate(selectedTime.getDate() + 1);
+      setTime(selectedTime); // Обновляем состояние, чтобы пользователь видел новое время
+    }
+
     try {
+      // Запланировать уведомление
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Czas na lek 💊",
-          body: "Nie zapomnij przyjąć leku!",
+          body: `Nie zapomnij przyjąć leku: ${medicine.name}`,
         },
-        trigger: time,
+        trigger: selectedTime,
       });
 
-
+      // Сохранить в Supabase
       const { error } = await supabase
         .from('medicines')
-        .update({ reminder_time: time.toISOString() })
+        .update({ reminder_time: selectedTime.toISOString() })
         .eq('id', medicine.id);
 
       if (error) throw error;
 
-      Alert.alert("Zapisano", `Przypomnienie ustawione na ${time.toLocaleTimeString()}`);
-      fetchMedicines();
+      // Показать сообщение с учетом, что время могло быть перенесено
+      const isTomorrow = selectedTime.getDate() !== now.getDate();
+      Alert.alert(
+        "Zapisano",
+        `Przypomnienie ustawione na ${selectedTime.toLocaleTimeString()} ${
+          isTomorrow ? "(jutro)" : ""
+        }`
+      );
+      
+      fetchMedicines(); // Обновить список лекарств
     } catch (error) {
-      console.log("Błąd zapisu/przypomnienia:", error);
+      console.error("Błąd zapisu/przypomnienia:", error);
       Alert.alert("Błąd", "Nie udało się ustawić przypomnienia.");
     }
   };

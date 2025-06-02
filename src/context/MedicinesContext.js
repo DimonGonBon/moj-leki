@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { Alert } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -8,13 +9,11 @@ export const MedicinesProvider = ({ children }) => {
   const [medicines, setMedicines] = useState([]);
   const { user } = useAuth();
 
-
   useEffect(() => {
     if (user) {
       fetchMedicines();
     }
   }, [user]);
-  
 
   const fetchMedicines = async () => {
     const { data, error } = await supabase
@@ -24,19 +23,20 @@ export const MedicinesProvider = ({ children }) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.log('Błąd ładowania leków:', error);
+      Alert.alert('Błąd', 'Nie udało się załadować leków.');
     } else {
       setMedicines(data);
     }
   };
 
   const addMedicine = async (medicine) => {
-    const { data, error } = await supabase.from('medicines').insert([
-      { ...medicine, user_id: user.id, taken: false }
-    ]).select();
+    const { data, error } = await supabase
+      .from('medicines')
+      .insert([{ ...medicine, user_id: user.id, taken: false }])
+      .select();
 
     if (error) {
-      console.log('Błąd dodania leków:', error);
+      Alert.alert('Błąd', 'Nie udało się dodać leku.');
     } else {
       setMedicines(prev => [data[0], ...prev]);
     }
@@ -51,7 +51,7 @@ export const MedicinesProvider = ({ children }) => {
       .select();
 
     if (error) {
-      console.log('Błąd odświeżania:', error);
+      Alert.alert('Błąd', 'Nie udało się zaktualizować leku.');
     } else {
       setMedicines(prev =>
         prev.map(m => (m.id === id ? { ...m, ...updatedFields } : m))
@@ -59,20 +59,20 @@ export const MedicinesProvider = ({ children }) => {
     }
   };
 
-  const deleteMedicine = async (id) => {
+const deleteMedicine = async (id) => {
+  try {
     const { error } = await supabase
       .from('medicines')
       .delete()
-      .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('id', id);
 
-    if (error) {
-      console.log('Błąd usuwania leków:', error);
-    } else {
-      setMedicines(prev => prev.filter(m => m.id !== id));
-    }
-  };
-
+    if (error) throw error;
+    await fetchMedicines();
+  } catch (error) {
+    console.error("Błąd usuwania leku:", error);
+    Alert.alert("Błąd", "Nie udało się usunąć leku.");
+  }
+};
   return (
     <MedicinesContext.Provider
       value={{

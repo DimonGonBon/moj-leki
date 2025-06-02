@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
 import MedicineStack from './src/screens/MedicineStack';
 import AddMedicineScreen from './src/screens/AddMedicineScreen';
@@ -81,7 +81,7 @@ function RootNavigation() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#00cc66" />
       </View>
     );
@@ -93,7 +93,6 @@ function RootNavigation() {
     </NavigationContainer>
   );
 }
-
 
 export default function App() {
   useEffect(() => {
@@ -108,3 +107,11 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

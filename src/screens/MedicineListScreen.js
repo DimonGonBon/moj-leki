@@ -6,12 +6,14 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  Alert
 } from 'react-native';
 import { useMedicines } from '../context/MedicinesContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function MedicineListScreen({ navigation }) {
-  const { medicines, fetchMedicines } = useMedicines();
+  const { medicines, fetchMedicines, deleteMedicine } = useMedicines();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -20,7 +22,23 @@ export default function MedicineListScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  
+  const handleDelete = (id) => {
+    Alert.alert(
+      "Usuń lek",
+      "Czy na pewno chcesz usunąć ten lek?",
+      [
+        {
+          text: "Anuluj",
+          style: "cancel"
+        },
+        { 
+          text: "Usuń", 
+          onPress: () => deleteMedicine(id) 
+        }
+      ]
+    );
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
@@ -36,6 +54,12 @@ export default function MedicineListScreen({ navigation }) {
         <Text style={styles.detail}>Dawka: {item.dose}</Text>
         <Text style={styles.detail}>{item.taken ? 'Przyjęto' : 'Nieprzyjęto'}</Text>
       </View>
+      <TouchableOpacity 
+        style={styles.deleteButton}
+        onPress={() => handleDelete(item.id)}
+      >
+        <Ionicons name="trash" size={24} color="#ff4444" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -70,7 +94,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#2c2c2c',
     borderRadius: 10,
     marginBottom: 10,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    alignItems: 'center',
+    position: 'relative',
   },
   image: {
     width: 100,
@@ -88,5 +114,12 @@ const styles = StyleSheet.create({
   detail: {
     color: '#ccc',
     fontSize: 14
+  },
+  deleteButton: {
+    padding: 15,
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -12 }]
   }
 });

@@ -6,18 +6,23 @@ export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Błąd', 'Wprowadź email i hasło');
-      return;
-    }
+const handleLogin = async () => {
+  if (!email || !password) {
+    Alert.alert('Błąd', 'Wprowadź email i hasło');
+    return;
+  }
 
-    const { error } = await login(email, password);
-    if (error) {
-      Alert.alert('Błąd logowania', error.message);
-    }
-  };
+  setIsLoading(true);
+  const { error } = await login(email, password);
+  setIsLoading(false);
+
+  if (error) {
+    Alert.alert('Błąd logowania', error.message);
+  }
+};
+
 
   
   return (
