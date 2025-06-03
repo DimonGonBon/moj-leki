@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { useMedicines } from '../context/MedicinesContext';
 import { Ionicons } from '@expo/vector-icons';
+import withAuthProtection from '../components/withAuthProtection';
 
-export default function MedicineListScreen({ navigation }) {
+function MedicineListScreen({ navigation }) {
   const { medicines, fetchMedicines, deleteMedicine } = useMedicines();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -31,9 +32,9 @@ export default function MedicineListScreen({ navigation }) {
           text: "Anuluj",
           style: "cancel"
         },
-        { 
-          text: "Usuń", 
-          onPress: () => deleteMedicine(id) 
+        {
+          text: "Usuń",
+          onPress: () => deleteMedicine(id)
         }
       ]
     );
@@ -54,7 +55,7 @@ export default function MedicineListScreen({ navigation }) {
         <Text style={styles.detail}>Dawka: {item.dose}</Text>
         <Text style={styles.detail}>{item.taken ? 'Przyjęto' : 'Nieprzyjęto'}</Text>
       </View>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => handleDelete(item.id)}
       >
@@ -123,3 +124,5 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -12 }]
   }
 });
+
+export default withAuthProtection(MedicineListScreen);

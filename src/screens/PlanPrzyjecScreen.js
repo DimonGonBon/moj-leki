@@ -7,8 +7,9 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useMedicines } from '../context/MedicinesContext';
+import withAuthProtection from '../components/withAuthProtection';
 
-export default function PlanPrzyjecScreen() {
+function PlanPrzyjecScreen() {
   const { medicines, fetchMedicines } = useMedicines();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -18,10 +19,14 @@ export default function PlanPrzyjecScreen() {
     setRefreshing(false);
   };
 
-  
   const scheduled = medicines
-    .filter(med => med.reminder_time)
+    .filter(med => !!med.reminder_time && !isNaN(new Date(med.reminder_time)))
     .sort((a, b) => new Date(a.reminder_time) - new Date(b.reminder_time));
+
+  const formatTime = (datetime) => {
+    const date = new Date(datetime);
+    return isNaN(date) ? 'Brak godziny' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <View style={styles.container}>
@@ -44,7 +49,7 @@ export default function PlanPrzyjecScreen() {
           <View style={styles.item}>
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.time}>
-              Przypomnienie: {new Date(item.reminder_time).toLocaleTimeString()}
+              Przypomnienie: {formatTime(item.reminder_time)}
             </Text>
           </View>
         )}
@@ -61,3 +66,5 @@ const styles = StyleSheet.create({
   time: { color: '#ccc', fontSize: 14 },
   empty: { color: '#aaa', fontSize: 18, textAlign: 'center', marginTop: 50 },
 });
+
+export default withAuthProtection(PlanPrzyjecScreen);

@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useMedicines } from '../context/MedicinesContext';
+import withAuthProtection from '../components/withAuthProtection';
 
-export default function AddMedicineScreen({ navigation }) {
+function AddMedicineScreen({ navigation }) {
   const { addMedicine } = useMedicines();
   const { user } = useAuth();
 
@@ -104,3 +105,5 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 });
+
+export default withAuthProtection(AddMedicineScreen);

@@ -1,28 +1,35 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
-export default function RegisterScreen({ navigation }) {
+export default function RegisterScreen() {
   const { register } = useAuth();
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert('Błąd', 'Wprowadź email i hasło');
-      return;
-    }
+const handleRegister = async () => {
+  if (!email || !password) {
+    Alert.alert('Błąd', 'Wprowadź email i hasło');
+    return;
+  }
 
-    const { error } = await register(email, password);
-    if (error) {
+  const { error } = await register(email, password);
+
+  if (error) {
+    if (error.message.toLowerCase().includes('user already registered')) {
+      Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
+    } else {
       Alert.alert('Błąd rejestracji', error.message);
     }
-  };
+  }
+};
+
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Zarejestruj się</Text>
-
 
       <TextInput
         style={styles.input}

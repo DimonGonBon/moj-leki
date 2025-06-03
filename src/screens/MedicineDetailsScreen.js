@@ -35,16 +35,16 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
 
   const handleSaveAndNotify = async () => {
     const now = new Date();
-    const selectedTime = new Date(time); // Копируем, чтобы не менять состояние напрямую
+    const selectedTime = new Date(time); 
 
-    // Если выбранное время УЖЕ прошло сегодня, переносим на завтра
+
     if (selectedTime < now) {
       selectedTime.setDate(selectedTime.getDate() + 1);
-      setTime(selectedTime); // Обновляем состояние, чтобы пользователь видел новое время
+      setTime(selectedTime); 
     }
 
     try {
-      // Запланировать уведомление
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Czas na lek 💊",
@@ -53,7 +53,7 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
         trigger: selectedTime,
       });
 
-      // Сохранить в Supabase
+
       const { error } = await supabase
         .from('medicines')
         .update({ reminder_time: selectedTime.toISOString() })
@@ -61,7 +61,6 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
 
       if (error) throw error;
 
-      // Показать сообщение с учетом, что время могло быть перенесено
       const isTomorrow = selectedTime.getDate() !== now.getDate();
       Alert.alert(
         "Zapisano",
@@ -70,7 +69,7 @@ export default function MedicineDetailsScreen({ route: navRoute }) {
         }`
       );
       
-      fetchMedicines(); // Обновить список лекарств
+      fetchMedicines();
     } catch (error) {
       console.error("Błąd zapisu/przypomnienia:", error);
       Alert.alert("Błąd", "Nie udało się ustawić przypomnienia.");

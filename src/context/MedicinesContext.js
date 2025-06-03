@@ -39,6 +39,7 @@ export const MedicinesProvider = ({ children }) => {
       Alert.alert('Błąd', 'Nie udało się dodać leku.');
     } else {
       setMedicines(prev => [data[0], ...prev]);
+      Alert.alert('Sukces', 'Lek został dodany.');
     }
   };
 
@@ -56,23 +57,25 @@ export const MedicinesProvider = ({ children }) => {
       setMedicines(prev =>
         prev.map(m => (m.id === id ? { ...m, ...updatedFields } : m))
       );
+      Alert.alert('Sukces', 'Lek został zaktualizowany.');
     }
   };
 
-const deleteMedicine = async (id) => {
-  try {
+  const deleteMedicine = async (id) => {
     const { error } = await supabase
       .from('medicines')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
-    if (error) throw error;
-    await fetchMedicines();
-  } catch (error) {
-    console.error("Błąd usuwania leku:", error);
-    Alert.alert("Błąd", "Nie udało się usunąć leku.");
-  }
-};
+    if (error) {
+      Alert.alert('Błąd', 'Nie udało się usunąć leku.');
+    } else {
+      setMedicines(prev => prev.filter(m => m.id !== id));
+      Alert.alert('Sukces', 'Lek został usunięty.');
+    }
+  };
+
   return (
     <MedicinesContext.Provider
       value={{

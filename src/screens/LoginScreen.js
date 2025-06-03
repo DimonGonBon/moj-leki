@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const { login } = useAuth();
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-const handleLogin = async () => {
-  if (!email || !password) {
-    Alert.alert('Błąd', 'Wprowadź email i hasło');
-    return;
-  }
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Błąd', 'Wprowadź email i hasło');
+      return;
+    }
 
-  setIsLoading(true);
-  const { error } = await login(email, password);
-  setIsLoading(false);
+    const { error } = await login(email, password);
+    if (error) {
+      Alert.alert('Błąd logowania', error.message);
+    }
+  };
 
-  if (error) {
-    Alert.alert('Błąd logowania', error.message);
-  }
-};
-
-
-  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Zaloguj się</Text>
@@ -57,6 +54,7 @@ const handleLogin = async () => {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
