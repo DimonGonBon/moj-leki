@@ -18,32 +18,36 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert('Błąd', 'Wprowadź email i hasło');
-      return;
-    }
+const handleRegister = async () => {
+  if (!email || !password) {
+    Alert.alert('Błąd', 'Wprowadź email i hasło');
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      const { error } = await register(email, password);
+  try {
+    setIsLoading(true);
+    const { error } = await register(email, password);
 
-      if (error) {
-        if (error.message.toLowerCase().includes('user already registered')) {
-          Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
-        } else {
-          Alert.alert('Błąd rejestracji', error.message);
-        }
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('user already registered')) {
+        Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
+      } else if (msg.includes('network')) {
+        Alert.alert('Brak połączenia', 'Sprawdź swoje połączenie internetowe.');
       } else {
-        Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
-        navigation.navigate('Login');
+        Alert.alert('Błąd rejestracji', error.message || 'Coś poszło nie tak.');
       }
-    } catch (e) {
-      Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
+      navigation.navigate('Login');
     }
-  };
+  } catch (e) {
+    Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <View style={styles.container}>

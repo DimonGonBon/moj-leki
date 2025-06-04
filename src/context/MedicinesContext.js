@@ -23,10 +23,12 @@ export const MedicinesProvider = ({ children }) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      Alert.alert('Błąd', 'Nie udało się załadować leków.');
-    } else {
-      setMedicines(data);
+      Alert.alert('Błąd ładowania leków:', error);
+      return { data: null, error };
     }
+
+    setMedicines(data);
+    return { data, error: null };
   };
 
   const addMedicine = async (medicine) => {
@@ -36,11 +38,12 @@ export const MedicinesProvider = ({ children }) => {
       .select();
 
     if (error) {
-      Alert.alert('Błąd', 'Nie udało się dodać leku.');
-    } else {
-      setMedicines(prev => [data[0], ...prev]);
-      Alert.alert('Sukces', 'Lek został dodany.');
+      Alert.alert('Błąd dodawania leku:', error);
+      return { data: null, error };
     }
+
+    setMedicines(prev => [data[0], ...prev]);
+    return { data: data[0], error: null };
   };
 
   const updateMedicine = async (id, updatedFields) => {
@@ -52,13 +55,15 @@ export const MedicinesProvider = ({ children }) => {
       .select();
 
     if (error) {
-      Alert.alert('Błąd', 'Nie udało się zaktualizować leku.');
-    } else {
-      setMedicines(prev =>
-        prev.map(m => (m.id === id ? { ...m, ...updatedFields } : m))
-      );
-      Alert.alert('Sukces', 'Lek został zaktualizowany.');
+      Alert.alert('Błąd aktualizacji leku:', error);
+      return { data: null, error };
     }
+
+    setMedicines(prev =>
+      prev.map(m => (m.id === id ? { ...m, ...updatedFields } : m))
+    );
+
+    return { data: data[0], error: null };
   };
 
   const deleteMedicine = async (id) => {
@@ -69,11 +74,12 @@ export const MedicinesProvider = ({ children }) => {
       .eq('user_id', user.id);
 
     if (error) {
-      Alert.alert('Błąd', 'Nie udało się usunąć leku.');
-    } else {
-      setMedicines(prev => prev.filter(m => m.id !== id));
-      Alert.alert('Sukces', 'Lek został usunięty.');
+      Alert.alert('Błąd usuwania leku:', error);
+      return { error };
     }
+
+    setMedicines(prev => prev.filter(m => m.id !== id));
+    return { error: null };
   };
 
   return (
@@ -90,5 +96,4 @@ export const MedicinesProvider = ({ children }) => {
     </MedicinesContext.Provider>
   );
 };
-
 export const useMedicines = () => useContext(MedicinesContext);

@@ -28,51 +28,57 @@ function AddMedicineScreen({ navigation }) {
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleAdd = async () => {
-    if (!name || !type || !dose) {
-      Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
+const handleAdd = async () => {
+  if (!name || !type || !dose) {
+    Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
+    return;
+  }
+
+  const newMedicine = {
+    name,
+    type,
+    dose,
+    image,
+    description,
+    reminder_time: reminderTime.toISOString(),
+  };
+
+  try {
+    setLoading(true);
+
+    const { data, error } = await addMedicine(newMedicine);
+    if (error) {
+      Alert.alert("Błąd", error.message || "Nie udało się dodać leku.");
       return;
     }
 
-    const newMedicine = {
-      name,
-      type,
-      dose,
-      image,
-      description,
-      reminder_time: reminderTime.toISOString(),
-    };
+    await registerForPushNotificationsAsync();
 
-    try {
-      setLoading(true);
-      await addMedicine(newMedicine);
-      await registerForPushNotificationsAsync();
+    const secondsUntilReminder = Math.max(
+      1,
+      Math.floor((reminderTime.getTime() - Date.now()) / 1000)
+    );
 
-      const secondsUntilReminder = Math.max(
-        1,
-        Math.floor((reminderTime.getTime() - Date.now()) / 1000)
-      );
+    await schedulePushNotification({
+      title: 'Mój Lek',
+      body: `Czas wziąć lek: ${name}`,
+      seconds: secondsUntilReminder
+    });
 
-      await schedulePushNotification({
-        title: 'Mój Lek',
-        body: `Czas wziąć lek: ${name}`,
-        seconds: secondsUntilReminder
-      });
-
-      setName('');
-      setType('');
-      setDose('');
-      setImage('');
-      setDescription('');
-      setReminderTime(new Date());
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert("Błąd", "Nie udało się dodać leku.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    setName('');
+    setType('');
+    setDose('');
+    setImage('');
+    setDescription('');
+    setReminderTime(new Date());
+    navigation.goBack();
+  } catch (error) {
+    console.error("Add medicine error:", error);
+    Alert.alert("Błąd", "Nieoczekiwany problem.");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Dodaj lek</Text>

@@ -23,31 +23,45 @@ function MedicineListScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  const handleDelete = (id) => {
-    Alert.alert(
-      "Usuń lek",
-      "Czy na pewno chcesz usunąć ten lek?",
-      [
-        {
-          text: "Anuluj",
-          style: "cancel"
-        },
-        {
-          text: "Usuń",
-          onPress: () => deleteMedicine(id)
+const handleDelete = (id) => {
+  Alert.alert(
+    "Usuń lek",
+    "Czy na pewno chcesz usunąć ten lek?",
+    [
+      {
+        text: "Anuluj",
+        style: "cancel"
+      },
+      {
+        text: "Usuń",
+        onPress: async () => {
+          const { error } = await deleteMedicine(id);
+          if (error) {
+            Alert.alert("Błąd", error.message || "Nie udało się usunąć leku.");
+          }
         }
-      ]
-    );
-  };
+      }
+    ]
+  );
+};
 
-  const renderItem = ({ item }) => (
+const renderItem = ({ item }) => (
+  <MedicineItem item={item} onDelete={handleDelete} navigation={navigation} />
+);
+function MedicineItem({ item, onDelete, navigation }) {
+  const [imageUri, setImageUri] = useState(item.image || 'https://via.placeholder.com/100');
+
+  return (
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => navigation.navigate('MedicineDetails', { medicine: item })}
     >
       <Image
-        source={{ uri: item.image || 'https://via.placeholder.com/100' }}
+        source={{ uri: imageUri }}
         style={styles.image}
+        onError={() =>
+          setImageUri('https://via.placeholder.com/100?text=Brak+obrazka')
+        }
       />
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
@@ -57,12 +71,15 @@ function MedicineListScreen({ navigation }) {
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => handleDelete(item.id)}
+        onPress={() => onDelete(item.id)}
       >
         <Ionicons name="trash" size={24} color="#ff4444" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
+}
+
+
 
   return (
     <View style={styles.container}>

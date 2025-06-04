@@ -8,33 +8,52 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const login = async (email, password) => {
+const login = async (email, password) => {
+  try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (!error && data.session) {
+    if (error) return { error };
+
+    if (data?.session?.user) {
       setUser(data.session.user);
       setLoggedIn(true);
     }
 
-    return { error };
-  };
+    return { error: null, user: data.session.user };
+  } catch (e) {
+    return { error: e };
+  }
+};
 
-  const register = async (email, password) => {
+
+const register = async (email, password) => {
+  try {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
-    if (error) {
-      console.log('Registration error:', error);
-      return { error };
-    }
+    if (error) return { error };
 
-    return { data };
-  };
+    return { error: null, user: data.user };
+  } catch (e) {
+    return { error: e };
+  }
+};
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+
+
+const logout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) return { error };
+
     setLoggedIn(false);
     setUser(null);
-  };
+    return { error: null };
+  } catch (e) {
+    return { error: e };
+  }
+};
+
+
 
   useEffect(() => {
     const initAuth = async () => {

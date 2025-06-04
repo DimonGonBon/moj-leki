@@ -18,24 +18,32 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Błąd', 'Wprowadź email i hasło');
-      return;
-    }
+ const handleLogin = async () => {
+  if (!email || !password) {
+    Alert.alert('Błąd', 'Wprowadź email i hasło');
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      const { error } = await login(email, password);
-      if (error) {
-        Alert.alert('Błąd logowania', error.message);
+  try {
+    setIsLoading(true);
+    const { error } = await login(email, password);
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('invalid login credentials')) {
+        Alert.alert('Błąd', 'Nieprawidłowy email lub hasło.');
+      } else if (msg.includes('network')) {
+        Alert.alert('Brak połączenia', 'Sprawdź swoje połączenie internetowe.');
+      } else {
+        Alert.alert('Błąd logowania', error.message || 'Coś poszło nie tak.');
       }
-    } catch (e) {
-      Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (e) {
+    Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <View style={styles.container}>
