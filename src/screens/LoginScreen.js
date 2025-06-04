@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
@@ -16,9 +24,16 @@ export default function LoginScreen() {
       return;
     }
 
-    const { error } = await login(email, password);
-    if (error) {
-      Alert.alert('Błąd logowania', error.message);
+    try {
+      setIsLoading(true);
+      const { error } = await login(email, password);
+      if (error) {
+        Alert.alert('Błąd logowania', error.message);
+      }
+    } catch (e) {
+      Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,8 +59,16 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Zaloguj</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#1c1c1c" />
+        ) : (
+          <Text style={styles.buttonText}>Zaloguj</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -54,7 +77,6 @@ export default function LoginScreen() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -83,6 +105,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 15,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#1c1c1c',

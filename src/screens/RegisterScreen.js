@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
@@ -8,24 +16,34 @@ export default function RegisterScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-const handleRegister = async () => {
-  if (!email || !password) {
-    Alert.alert('Błąd', 'Wprowadź email i hasło');
-    return;
-  }
-
-  const { error } = await register(email, password);
-
-  if (error) {
-    if (error.message.toLowerCase().includes('user already registered')) {
-      Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
-    } else {
-      Alert.alert('Błąd rejestracji', error.message);
+  const handleRegister = async () => {
+    if (!email || !password) {
+      Alert.alert('Błąd', 'Wprowadź email i hasło');
+      return;
     }
-  }
-};
 
+    try {
+      setIsLoading(true);
+      const { error } = await register(email, password);
+
+      if (error) {
+        if (error.message.toLowerCase().includes('user already registered')) {
+          Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
+        } else {
+          Alert.alert('Błąd rejestracji', error.message);
+        }
+      } else {
+        Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
+        navigation.navigate('Login');
+      }
+    } catch (e) {
+      Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -49,8 +67,16 @@ const handleRegister = async () => {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Zarejestruj</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleRegister}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#1c1c1c" />
+        ) : (
+          <Text style={styles.buttonText}>Zarejestruj</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -87,6 +113,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 15,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#1c1c1c',
