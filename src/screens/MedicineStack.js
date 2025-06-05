@@ -1,4 +1,4 @@
-// --- src/screens/MedicineStack.js ---
+
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
