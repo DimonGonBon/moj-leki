@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -29,6 +29,16 @@
       "eas": {
         "projectId": "c74cfa63-773c-4edb-a594-6e4dcaacda11"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "expoGradlePluginVersion": "1.8.0"
+          }
+        }
+      ]
+    ]
   }
 }
