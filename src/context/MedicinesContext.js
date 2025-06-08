@@ -1,8 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from './AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MedicinesContext = createContext({});
+const STORAGE_KEY = 'cached_medicines';
 
 export const MedicinesProvider = ({ children }) => {
   const [medicines, setMedicines] = useState([]);
@@ -22,13 +24,34 @@ export const MedicinesProvider = ({ children }) => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) return { data: null, error };
+      if (error || !data) {
+        const cached = await AsyncStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setMedicines(parsed);
+          console.log('📦 Loaded medicines from offline cache');
+          return { data: parsed, error: null };
+        }
+        return { data: null, error };
+      }
 
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       setMedicines(data);
       return { data, error: null };
     } catch (e) {
+      console.error('❌ fetchMedicines error:', e);
+      const cached = await AsyncStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setMedicines(parsed);
+        return { data: parsed, error: null };
+      }
       return { data: null, error: e };
     }
+  };
+
+  const updateCache = async (updatedList) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
   };
 
   const addMedicine = async (medicine) => {
@@ -40,7 +63,10 @@ export const MedicinesProvider = ({ children }) => {
 
       if (error) return { data: null, error };
 
-      setMedicines(prev => [data[0], ...prev]);
+      const newList = [data[0], ...medicines];
+      setMedicines(newList);
+      await updateCache(newList);
+
       return { data: data[0], error: null };
     } catch (e) {
       return { data: null, error: e };
@@ -58,9 +84,11 @@ export const MedicinesProvider = ({ children }) => {
 
       if (error) return { data: null, error };
 
-      setMedicines(prev =>
-        prev.map(m => (m.id === id ? { ...m, ...updatedFields } : m))
+      const newList = medicines.map(m =>
+        m.id === id ? { ...m, ...updatedFields } : m
       );
+      setMedicines(newList);
+      await updateCache(newList);
 
       return { data: data[0], error: null };
     } catch (e) {
@@ -78,7 +106,10 @@ export const MedicinesProvider = ({ children }) => {
 
       if (error) return { error };
 
-      setMedicines(prev => prev.filter(m => m.id !== id));
+      const newList = medicines.filter(m => m.id !== id);
+      setMedicines(newList);
+      await updateCache(newList);
+
       return { error: null };
     } catch (e) {
       return { error: e };
