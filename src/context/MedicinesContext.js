@@ -3,20 +3,20 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MedicinesContext = createContext({});
+const MedicinesContext = createContext({}); //Создаем пустой контектс тчо будет давать доступ к данным о лекарствах
 const STORAGE_KEY = 'cached_medicines';
 
-export const MedicinesProvider = ({ children }) => {
-  const [medicines, setMedicines] = useState([]);
-  const { user } = useAuth();
+export const MedicinesProvider = ({ children }) => { //Компонент функцийны который оборачивает код что бы передать данные через контекст
+  const [medicines, setMedicines] = useState([]); //Список лекарств юзера
+  const { user } = useAuth(); //Текущий юзер что взят из Аутент.Контекст
 
-  useEffect(() => {
+  useEffect(() => { //Если юзер сменился или вошел то загружаем его лекарства из супабазе
     if (user) {
       fetchMedicines();
     }
   }, [user]);
 
-  const fetchMedicines = async () => {
+  const fetchMedicines = async () => { //Получаем лекарства пользователя которые в порядке создания
     try {
       const { data, error } = await supabase
         .from('medicines')
@@ -54,14 +54,14 @@ export const MedicinesProvider = ({ children }) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
   };
 
-  const addMedicine = async (medicine) => {
+  const addMedicine = async (medicine) => { //Добавляем лекарства в базу и указываем его текущего пользователя 
     try {
       const { data, error } = await supabase
         .from('medicines')
         .insert([{ ...medicine, user_id: user.id, taken: false }])
         .select();
 
-      if (error) return { data: null, error };
+      if (error) return { data: null, error };//Добавляем лекарство в начало списка
 
       const newList = [data[0], ...medicines];
       setMedicines(newList);
@@ -73,7 +73,7 @@ export const MedicinesProvider = ({ children }) => {
     }
   };
 
-  const updateMedicine = async (id, updatedFields) => {
+  const updateMedicine = async (id, updatedFields) => { //Обновляем записи что соответствуют айди и принадлежат юзеру 
     try {
       const { data, error } = await supabase
         .from('medicines')
@@ -87,7 +87,7 @@ export const MedicinesProvider = ({ children }) => {
       const newList = medicines.map(m =>
         m.id === id ? { ...m, ...updatedFields } : m
       );
-      setMedicines(newList);
+      setMedicines(newList); //Обновляем конкретное лекарство в локальном состоянии
       await updateCache(newList);
 
       return { data: data[0], error: null };
@@ -96,7 +96,7 @@ export const MedicinesProvider = ({ children }) => {
     }
   };
 
-  const deleteMedicine = async (id) => {
+  const deleteMedicine = async (id) => { // Удаляем запись по айди и юзерайди
     try {
       const { error } = await supabase
         .from('medicines')
@@ -106,8 +106,8 @@ export const MedicinesProvider = ({ children }) => {
 
       if (error) return { error };
 
-      const newList = medicines.filter(m => m.id !== id);
-      setMedicines(newList);
+      const newList = medicines.filter(m => m.id !== id); //Удаляем конкретный айди 
+      setMedicines(newList);//Создаем новый список 
       await updateCache(newList);
 
       return { error: null };
@@ -116,7 +116,7 @@ export const MedicinesProvider = ({ children }) => {
     }
   };
 
-  return (
+  return ( //Все основные функции и список лекарств передаются через провайдер
     <MedicinesContext.Provider
       value={{
         medicines,
@@ -131,4 +131,4 @@ export const MedicinesProvider = ({ children }) => {
   );
 };
 
-export const useMedicines = () => useContext(MedicinesContext);
+export const useMedicines = () => useContext(MedicinesContext); //Позволяет использовать данные контекста через хук

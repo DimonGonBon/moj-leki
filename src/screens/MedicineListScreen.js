@@ -14,16 +14,16 @@ import { Ionicons } from '@expo/vector-icons';
 import withAuthProtection from '../components/withAuthProtection';
 
 function MedicineListScreen({ navigation }) {
-  const { medicines, fetchMedicines, deleteMedicine } = useMedicines();
-  const [refreshing, setRefreshing] = useState(false);
+  const { medicines, fetchMedicines, deleteMedicine } = useMedicines(); //Получаем список лек., функция загрузки/обновления списка, удаление лек. по айди
+  const [refreshing, setRefreshing] = useState(false); //Состояние отвечает за скролл вниз(обновить страницу)
 
-  const onRefresh = async () => {
+  const onRefresh = async () => { //Вызывается при потягивании списка \ перезагружает данные и выключает возможность обновлений
     setRefreshing(true);
     await fetchMedicines();
     setRefreshing(false);
   };
 
-const handleDelete = (id) => {
+const handleDelete = (id) => { //Перед удалением выводит диалог окно, если юзер нажал Usuń то вызывается 37-38 строка
   Alert.alert(
     "Usuń lek",
     "Czy na pewno chcesz usunąć ten lek?",
@@ -36,7 +36,7 @@ const handleDelete = (id) => {
         text: "Usuń",
         onPress: async () => {
           const { error } = await deleteMedicine(id);
-          if (error) {
+          if (error) { // если ошибка то показывается алерт
             Alert.alert("Błąd", error.message || "Nie udało się usunąć leku.");
           }
         }
@@ -45,16 +45,16 @@ const handleDelete = (id) => {
   );
 };
 
-const renderItem = ({ item }) => (
+const renderItem = ({ item }) => ( //Каждый элемент списка передаётся в компонент медицинайтем
   <MedicineItem item={item} onDelete={handleDelete} navigation={navigation} />
 );
-function MedicineItem({ item, onDelete, navigation }) {
-  const [imageUri, setImageUri] = useState(item.image || 'https://via.placeholder.com/100');
+function MedicineItem({ item, onDelete, navigation }) {    //Принимает объект лек. и функции перехода/удаления
+  const [imageUri, setImageUri] = useState(item.image || 'https://via.placeholder.com/100'); //Если не указано изображение то ставит по умолчанию это
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity 
       style={styles.itemContainer}
-      onPress={() => navigation.navigate('MedicineDetails', { medicine: item })}
+      onPress={() => navigation.navigate('MedicineDetails', { medicine: item })} // При нажатии на лек. переход к экрану деталий
     >
       <Image
         source={{ uri: imageUri }}
@@ -69,9 +69,9 @@ function MedicineItem({ item, onDelete, navigation }) {
         <Text style={styles.detail}>Dawka: {item.dose}</Text>
         <Text style={styles.detail}>{item.taken ? 'Przyjęto' : 'Nieprzyjęto'}</Text>
       </View>
-      <TouchableOpacity
+      <TouchableOpacity //Кнопка удаления, вызывает хандлделейт
         style={styles.deleteButton}
-        onPress={() => onDelete(item.id)}
+        onPress={() => onDelete(item.id)} 
       >
         <Ionicons name="trash" size={24} color="#ff4444" />
       </TouchableOpacity>
@@ -83,7 +83,7 @@ function MedicineItem({ item, onDelete, navigation }) {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlatList //Отображает лекарства и используется рендерайтем и поддержка обновления страниц через онрефреш
         data={medicines}
         keyExtractor={item => item.id}
         renderItem={renderItem}
@@ -142,4 +142,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withAuthProtection(MedicineListScreen);
+export default withAuthProtection(MedicineListScreen); // Проверяет вошел ли юзер в систему если нет то перекинет на экран логина 

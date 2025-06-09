@@ -2,17 +2,17 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import HomeScreen from './screens/HomeScreen';
-import AddProductScreen from './screens/AddProductScreen';
-import ProductDetailsScreen from './screens/ProductDetailsScreen';
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import MedicineListScreen from '../screens/MedicineListScreen';
+import AddMedicineScreen from '../screens/AddMedicineScreen';
+import MedicineDetailsScreen from '../screens/MedicineDetailsScreen';
 
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Stack = createStackNavigator();
 
-const AuthStack = () => (
+const AuthStack = () => ( //Стек для незалогиненых
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
@@ -20,35 +20,35 @@ const AuthStack = () => (
 );
 
 
-const AppStack = () => (
+const AppStack = () => ( //Стек для залогиненых
   <Stack.Navigator>
     <Stack.Screen
       name="Home"
-      component={HomeScreen}
-      options={{ title: 'Lista Zakupów' }}
+      component={MedicineListScreen}
+      options={{ title: 'MójLeki' }}
     />
     <Stack.Screen
-      name="AddProduct"
-      component={AddProductScreen}
-      options={{ title: 'Dodaj produkt' }}
+      name="AddMedicine"
+      component={AddMedicineScreen}
+      options={{ title: 'Dodaj lek' }}
     />
     <Stack.Screen
-      name="ProductDetails"
-      component={ProductDetailsScreen}
-      options={{ title: 'Szczegóły produktu' }}
+      name="MedicineDetails"
+      component={MedicineDetailsScreen}
+      options={{ title: 'Szczegóły leków' }}
     />
   </Stack.Navigator>
 );
 
 export default function Navigation() {
-  const { isLoggedIn, loading } = useAuth();
+  const { isLoggedIn, loading } = useAuth(); //isLoggedIn значение вошел ли юзер, лоадинг флаг пока не проверена сессия
   console.log('Navigation, isLoggedIn:', isLoggedIn, 'loading:', loading);
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen />;  //Пока загружается информация о сессии показывается загрузочный экран
 
-  return (
+  return (//Если юзер залогинен показывает Аппстак если нет аутентстак
     <NavigationContainer>
-      {isLoggedIn ? <AppStack /> : <AuthStack />}
+      {isLoggedIn ? <AppStack /> : <AuthStack />} 
     </NavigationContainer>
   );
 }

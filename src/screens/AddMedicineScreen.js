@@ -18,7 +18,6 @@ import { schedulePushNotification, registerForPushNotificationsAsync } from '../
 function AddMedicineScreen({ navigation }) {
   const { addMedicine } = useMedicines();
   const { user } = useAuth();
-
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [dose, setDose] = useState('');
@@ -28,12 +27,13 @@ function AddMedicineScreen({ navigation }) {
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
+//Проверка на правильность написания пунктов при добавлении экрана
 const handleAdd = async () => {
   if (!name || !type || !dose) {
     Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
     return;
   }
-
+//Создание объекта с данными лекарств что вписал user
   const newMedicine = {
     name,
     type,
@@ -46,12 +46,13 @@ const handleAdd = async () => {
   try {
     setLoading(true);
 
+    //Вызов добавления лекарств и потом переход к СупаБейз через контекст
     const { data, error } = await addMedicine(newMedicine);
     if (error) {
       Alert.alert("Błąd", error.message || "Nie udało się dodać leku.");
       return;
     }
-
+//Просим разрешение на уведомления + вычесляем сколько времени до напоминания и планируем пуш уведомления
     await registerForPushNotificationsAsync();
 
     const secondsUntilReminder = Math.max(
@@ -65,6 +66,7 @@ const handleAdd = async () => {
       seconds: secondsUntilReminder
     });
 
+//обнуляем форму и возвращаем на предыдущий экран
     setName('');
     setType('');
     setDose('');
@@ -80,6 +82,8 @@ const handleAdd = async () => {
   }
 };
   return (
+
+    //Стили строк
     <View style={styles.container}>
       <Text style={styles.title}>Dodaj lek</Text>
 
@@ -111,6 +115,7 @@ const handleAdd = async () => {
       )}
 
       <TouchableOpacity
+      //Стиль загрузки и кнопки Добавить
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={handleAdd}
         disabled={loading}
@@ -125,6 +130,7 @@ const handleAdd = async () => {
   );
 }
 
+//Стили экрана
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#1c1c1c' },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, color: '#00ff99' },

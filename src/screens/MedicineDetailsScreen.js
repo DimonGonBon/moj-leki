@@ -7,35 +7,35 @@ import ActionButton from '../components/ActionButton';
 import useMedicineActions from '../hooks/useMedicineActions';
 
 export default function MedicineDetailsScreen({ route }) {
-  const paramMedicine = route.params?.medicine;
+  const paramMedicine = route.params?.medicine; //Извлекает объект лекарства или айди
   const paramId = route.params?.id;
 
-  const { medicines, fetchMedicines, updateMedicine } = useMedicines();
-  const medicine = paramMedicine || medicines.find(m => m.id === paramId);
+  const { medicines, fetchMedicines, updateMedicine } = useMedicines(); //Получаем список лек., обновление списка, обновление лек.
+  const medicine = paramMedicine || medicines.find(m => m.id === paramId); //Если лекарство передано полным то используем если нет то ищем по айди
 
   const [time, setTime] = useState(
-    medicine?.reminder_time ? new Date(medicine.reminder_time) : new Date(Date.now() + 5 * 60000)
+    medicine?.reminder_time ? new Date(medicine.reminder_time) : new Date(Date.now() + 5 * 60000) //текущее выбраное время напоминания и +5 минут от текущего 
   );
-  const [showPicker, setShowPicker] = useState(false);
+  const [showPicker, setShowPicker] = useState(false); //Видимость выбора времени
 
-  const { handleSaveAndNotify, handleMarkAsTaken, handleShare } = useMedicineActions({
+  const { handleSaveAndNotify, handleMarkAsTaken, handleShare } = useMedicineActions({ //Хук юзерМедисинакшон возвращает методы сохранить и запланировать, отметить как принято, ссылка на лекарство
     medicine, time, updateMedicine, fetchMedicines, setTime,
   });
 
-  const onChange = (_, selectedDate) => {
+  const onChange = (_, selectedDate) => { //Обновляет выбарное время в DateTimePicker
     const currentDate = selectedDate || time;
     setShowPicker(false);
     setTime(currentDate);
   };
 
-  if (!medicine) {
+  if (!medicine) { //Если лек. не найдено выводит ошибку
     return (
       <View style={styles.container}>
         <Text style={styles.text}>Nie znaleziono leku</Text>
       </View>
     );
   }
-
+//Стили
   return (
     <View style={styles.container}>
       <MedicineHeader medicine={medicine} />

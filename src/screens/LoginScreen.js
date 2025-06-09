@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
+//Храним емайл и пароль и статус загрузки - тру показывает спинер и отключает кнопки
 export default function LoginScreen() {
   const { login } = useAuth();
   const navigation = useNavigation();
@@ -18,7 +19,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  //Функция асинхронная вызывается при нажатии Войти
  const handleLogin = async () => {
+//Если поля емайл и пароль то выдаем ошибку
   if (!email || !password) {
     Alert.alert('Błąd', 'Wprowadź email i hasło');
     return;
@@ -26,9 +29,9 @@ export default function LoginScreen() {
 
   try {
     setIsLoading(true);
-    const { error } = await login(email, password);
+    const { error } = await login(email, password); //Ставим флаг загрузки и пробуем войти через логин
     if (error) {
-      const msg = error.message.toLowerCase();
+      const msg = error.message.toLowerCase(); //Если ошибка есть то анализируем её и в зависимости от ошибки показываем сообщение
       if (msg.includes('invalid login credentials')) {
         Alert.alert('Błąd', 'Nieprawidłowy email lub hasło.');
       } else if (msg.includes('network')) {
@@ -37,14 +40,14 @@ export default function LoginScreen() {
         Alert.alert('Błąd logowania', error.message || 'Coś poszło nie tak.');
       }
     }
-  } catch (e) {
+  } catch (e) { //Если произошло исключение то показываем ошибку и сбрасываем загрузку
     Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
   } finally {
     setIsLoading(false);
   }
 };
 
-
+//Стили
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Zaloguj się</Text>

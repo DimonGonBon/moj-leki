@@ -19,6 +19,7 @@ import { registerForPushNotificationsAsync } from './src/utils/NotificationServi
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+//Отображение вкладок внизу, тех что календарь, домик и +
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -41,17 +42,17 @@ function MainTabs() {
     </Tab.Navigator>
   );
 }
-
+//Основная навигация, показывается после входа  и имеет 2 экрана 
 function AppStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="MainTabs"
+        name="MainTabs" //Основное меню приложения
         component={MainTabs}
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="MedicineDetails"
+        name="MedicineDetails" //Экран деталий
         component={MedicineDetailsScreen}
         options={{ title: 'Szczegóły leku' }}
       />
@@ -59,6 +60,7 @@ function AppStack() {
   );
 }
 
+//Простой стек для показа экранов логина и регистрации если юзер не вошел (Первый запуск)
 function AuthStack() {
   return (
     <Stack.Navigator>
@@ -75,10 +77,11 @@ function AuthStack() {
     </Stack.Navigator>
   );
 }
-
+//Получаем статус входа и загрузки авторизации
 function RootNavigation() {
   const { isLoggedIn, loading } = useAuth();
 
+//Если ещё не обработан статус авторизации то показывает загрузку 
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -86,7 +89,7 @@ function RootNavigation() {
       </View>
     );
   }
-
+//Если юзер не вошел то показывается стек Аутентификации, а если вошел то показывается основа АппСтек
   return (
     <NavigationContainer>
       {isLoggedIn ? <AppStack /> : <AuthStack />}
@@ -94,11 +97,13 @@ function RootNavigation() {
   );
 }
 
+//Главный компонент, при запуске приложения запрашивается возможность на уведомления с помощью сто третей строки
 export default function App() {
   useEffect(() => {
     registerForPushNotificationsAsync();
   }, []);
 
+//Оборачиваем прогу в 2 контекста, первый Аутен.. управляет логином и регистрацией, выходом. Второй МедисинПровайдер добавление, удаление + редактирование.
   return (
     <AuthProvider>
       <MedicinesProvider>
@@ -108,6 +113,7 @@ export default function App() {
   );
 }
 
+//Стили
 const styles = StyleSheet.create({
   loaderContainer: {
     flex: 1,

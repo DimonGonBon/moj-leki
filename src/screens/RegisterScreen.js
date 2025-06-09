@@ -18,18 +18,18 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-const handleRegister = async () => {
-  if (!email || !password) {
+const handleRegister = async () => { //Так же как у Логина асинхроная функция которая вызывается при нажатии на кнопку регистрации
+  if (!email || !password) { // Проверка, если что то не было написано выводит ошибку
     Alert.alert('Błąd', 'Wprowadź email i hasło');
     return;
   }
 
   try {
     setIsLoading(true);
-    const { error } = await register(email, password);
+    const { error } = await register(email, password); //Вызывается функция регистра и отправляет данные на базу супабазе
 
     if (error) {
-      const msg = error.message.toLowerCase();
+      const msg = error.message.toLowerCase(); //Если была ошибка, анализируем текст и исходя из ошибки выводим алерт
       if (msg.includes('user already registered')) {
         Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
       } else if (msg.includes('network')) {
@@ -38,7 +38,7 @@ const handleRegister = async () => {
         Alert.alert('Błąd rejestracji', error.message || 'Coś poszło nie tak.');
       }
     } else {
-      Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
+      Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!'); //Если всё успешно выводится сообщение и переход к экрану входа
       navigation.navigate('Login');
     }
   } catch (e) {
@@ -48,7 +48,7 @@ const handleRegister = async () => {
   }
 };
 
-
+//Стили
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Zarejestruj się</Text>

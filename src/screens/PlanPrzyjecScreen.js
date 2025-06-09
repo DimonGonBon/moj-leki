@@ -19,19 +19,19 @@ function PlanPrzyjecScreen() {
     setRefreshing(false);
   };
 
-  const scheduled = medicines
-    .filter(med => !!med.reminder_time && !isNaN(new Date(med.reminder_time)))
-    .sort((a, b) => new Date(a.reminder_time) - new Date(b.reminder_time));
+  const scheduled = medicines //Отбор запланированых лекарств 
+    .filter(med => !!med.reminder_time && !isNaN(new Date(med.reminder_time))) //Фильтр лекарств, ремайндтайм должен быть указан + должно быть валидной датой 
+    .sort((a, b) => new Date(a.reminder_time) - new Date(b.reminder_time)); // Сортируем от самого ближнего до позднему
 
-  const formatTime = (datetime) => {
+  const formatTime = (datetime) => { //Форматирование времени
     const date = new Date(datetime);
-    return isNaN(date) ? 'Brak godziny' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return isNaN(date) ? 'Brak godziny' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); //отображение времени напоминания, если дата не коректна выводит Нет времени
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Plan przyjęć leków</Text>
-      <FlatList
+      <FlatList //Показывает все запланированые лекарства
         data={scheduled}
         keyExtractor={item => item.id}
         refreshControl={
@@ -43,11 +43,11 @@ function PlanPrzyjecScreen() {
           />
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>Brak zaplanowanych przypomnień.</Text>
+          <Text style={styles.empty}>Brak zaplanowanych przypomnień.</Text> //Если нет ничего то показывает сообщение 
         }
-        renderItem={({ item }) => (
+        renderItem={({ item }) => ( //Каждое лекарство содержит название и время напоминания 
           <View style={styles.item}>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.name}>{item.name}</Text> 
             <Text style={styles.time}>
               Przypomnienie: {formatTime(item.reminder_time)}
             </Text>
