@@ -8,7 +8,7 @@ export default function ActionButton({ title, onPress, color = '#00cc66' }) {
     </TouchableOpacity>
   );
 }
-
+//Стили
 const styles = StyleSheet.create({
   button: {
     padding: 12,
