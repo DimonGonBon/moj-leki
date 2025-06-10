@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'; //useWindowDimensions добавлено для адаптации к горизонтальному экрану и верт
 import { useMedicines } from '../context/MedicinesContext';
 import MedicineHeader from '../components/MedicineHeader';
 import ReminderTimePicker from '../components/ReminderTimePicker';
 import ActionButton from '../components/ActionButton';
 import useMedicineActions from '../hooks/useMedicineActions';
+import { ScrollView } from 'react-native';
 
 export default function MedicineDetailsScreen({ route }) {
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
+
   const paramMedicine = route.params?.medicine; //Извлекает объект лекарства или айди
   const paramId = route.params?.id;
 
@@ -30,21 +34,22 @@ export default function MedicineDetailsScreen({ route }) {
 
   if (!medicine) { //Если лек. не найдено выводит ошибку
     return (
-      <View style={styles.container}>
+      <View style={isPortrait ? styles.container : styles.containerLandscape}>
         <Text style={styles.text}>Nie znaleziono leku</Text>
       </View>
     );
   }
-//Стили
-  return (
-    <View style={styles.container}>
-      <MedicineHeader medicine={medicine} />
-      <ReminderTimePicker time={time} show={showPicker} setShow={setShowPicker} onChange={onChange} />
-      <ActionButton title="Ustaw i zapisz przypomnienie" onPress={handleSaveAndNotify} />
-      <ActionButton title="Przyjęto" onPress={() => handleMarkAsTaken()} />
-      <ActionButton title="Udostępnij" onPress={handleShare} color="#00aaff" />
-    </View>
-  );
+
+  //Стили
+return (
+  <ScrollView contentContainerStyle={isPortrait ? styles.container : styles.containerScrollLandscape}>
+    <MedicineHeader medicine={medicine} />
+    <ReminderTimePicker time={time} show={showPicker} setShow={setShowPicker} onChange={onChange} />
+    <ActionButton title="Ustaw i zapisz przypomnienie" onPress={handleSaveAndNotify} />
+    <ActionButton title="Przyjęto" onPress={() => handleMarkAsTaken()} />
+    <ActionButton title="Udostępnij" onPress={handleShare} color="#00aaff" />
+  </ScrollView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -52,6 +57,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1c1c1c',
     padding: 20,
+  },
+
+  containerScrollLandscape: {
+  padding: 40,
+  backgroundColor: '#1c1c1c',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+  containerLandscape: {
+    flex: 1,
+    backgroundColor: '#1c1c1c',
+    padding: 40,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   text: {
     fontSize: 18,

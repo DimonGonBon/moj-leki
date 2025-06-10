@@ -7,13 +7,17 @@ import {
   Image,
   TouchableOpacity,
   RefreshControl,
-  Alert
+  Alert,
+  useWindowDimensions // добавлено для определения ориентации
 } from 'react-native';
 import { useMedicines } from '../context/MedicinesContext';
 import { Ionicons } from '@expo/vector-icons';
 import withAuthProtection from '../components/withAuthProtection';
 
 function MedicineListScreen({ navigation }) {
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
+
   const { medicines, fetchMedicines, deleteMedicine } = useMedicines(); //Получаем список лек., функция загрузки/обновления списка, удаление лек. по айди
   const [refreshing, setRefreshing] = useState(false); //Состояние отвечает за скролл вниз(обновить страницу)
 
@@ -23,66 +27,65 @@ function MedicineListScreen({ navigation }) {
     setRefreshing(false);
   };
 
-const handleDelete = (id) => { //Перед удалением выводит диалог окно, если юзер нажал Usuń то вызывается 37-38 строка
-  Alert.alert(
-    "Usuń lek",
-    "Czy na pewno chcesz usunąć ten lek?",
-    [
-      {
-        text: "Anuluj",
-        style: "cancel"
-      },
-      {
-        text: "Usuń",
-        onPress: async () => {
-          const { error } = await deleteMedicine(id);
-          if (error) { // если ошибка то показывается алерт
-            Alert.alert("Błąd", error.message || "Nie udało się usunąć leku.");
+  const handleDelete = (id) => { //Перед удалением выводит диалог окно, если юзер нажал Usuń то вызывается 37-38 строка
+    Alert.alert(
+      "Usuń lek",
+      "Czy na pewno chcesz usunąć ten lek?",
+      [
+        {
+          text: "Anuluj",
+          style: "cancel"
+        },
+        {
+          text: "Usuń",
+          onPress: async () => {
+            const { error } = await deleteMedicine(id);
+            if (error) { // если ошибка то показывается алерт
+              Alert.alert("Błąd", error.message || "Nie udało się usunąć leku.");
+            }
           }
         }
-      }
-    ]
+      ]
+    );
+  };
+
+  const renderItem = ({ item }) => ( //Каждый элемент списка передаётся в компонент медицинайтем
+    <MedicineItem item={item} onDelete={handleDelete} navigation={navigation} isPortrait={isPortrait} />
   );
-};
 
-const renderItem = ({ item }) => ( //Каждый элемент списка передаётся в компонент медицинайтем
-  <MedicineItem item={item} onDelete={handleDelete} navigation={navigation} />
-);
-function MedicineItem({ item, onDelete, navigation }) {    //Принимает объект лек. и функции перехода/удаления
-  const [imageUri, setImageUri] = useState(item.image || 'https://via.placeholder.com/100'); //Если не указано изображение то ставит по умолчанию это
+  function MedicineItem({ item, onDelete, navigation, isPortrait }) { //Принимает объект лек. и функции перехода/удаления
+    const [imageUri, setImageUri] = useState(item.image || 'https://via.placeholder.com/100'); //Если не указано изображение то ставит по умолчанию это
 
-  return (
-    <TouchableOpacity 
-      style={styles.itemContainer}
-      onPress={() => navigation.navigate('MedicineDetails', { medicine: item })} // При нажатии на лек. переход к экрану деталий
-    >
-      <Image
-        source={{ uri: imageUri }}
-        style={styles.image}
-        onError={() =>
-          setImageUri('https://via.placeholder.com/100?text=Brak+obrazka')
-        }
-      />
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.detail}>Typ: {item.type}</Text>
-        <Text style={styles.detail}>Dawka: {item.dose}</Text>
-        <Text style={styles.detail}>{item.taken ? 'Przyjęto' : 'Nieprzyjęto'}</Text>
-      </View>
-      <TouchableOpacity //Кнопка удаления, вызывает хандлделейт
-        style={styles.deleteButton}
-        onPress={() => onDelete(item.id)} 
+    return (
+      <TouchableOpacity 
+        style={[styles.itemContainer, !isPortrait && styles.itemContainerLandscape]}
+        onPress={() => navigation.navigate('MedicineDetails', { medicine: item })} // При нажатии на лек. переход к экрану деталий
       >
-        <Ionicons name="trash" size={24} color="#ff4444" />
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.image}
+          onError={() =>
+            setImageUri('https://via.placeholder.com/100?text=Brak+obrazka')
+          }
+        />
+        <View style={styles.infoContainer}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.detail}>Typ: {item.type}</Text>
+          <Text style={styles.detail}>Dawka: {item.dose}</Text>
+          <Text style={styles.detail}>{item.taken ? 'Przyjęto' : 'Nieprzyjęto'}</Text>
+        </View>
+        <TouchableOpacity //Кнопка удаления, вызывает хандлделейт
+          style={styles.deleteButton}
+          onPress={() => onDelete(item.id)} 
+        >
+          <Ionicons name="trash" size={24} color="#ff4444" />
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
-}
-
-
+    );
+  }
 
   return (
-    <View style={styles.container}>
+    <View style={isPortrait ? styles.container : styles.containerLandscape}>
       <FlatList //Отображает лекарства и используется рендерайтем и поддержка обновления страниц через онрефреш
         data={medicines}
         keyExtractor={item => item.id}
@@ -107,6 +110,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1c1c1c',
     padding: 10,
   },
+  containerLandscape: {
+    flex: 1,
+    backgroundColor: '#1c1c1c',
+    padding: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-evenly',
+  },
   itemContainer: {
     flexDirection: 'row',
     backgroundColor: '#2c2c2c',
@@ -115,6 +126,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     position: 'relative',
+  },
+  itemContainerLandscape: {
+    width: '45%',
   },
   image: {
     width: 100,
@@ -142,4 +156,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withAuthProtection(MedicineListScreen); // Проверяет вошел ли юзер в систему если нет то перекинет на экран логина 
+export default withAuthProtection(MedicineListScreen); // Проверяет вошел ли юзер в систему если нет то перекинет на экран логина

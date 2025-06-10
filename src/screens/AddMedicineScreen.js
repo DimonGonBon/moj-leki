@@ -7,15 +7,20 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  Platform
+  Platform,
+  useWindowDimensions // добавлено для адаптации к горизонтальному экрану и верт
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useMedicines } from '../context/MedicinesContext';
 import withAuthProtection from '../components/withAuthProtection';
 import { schedulePushNotification, registerForPushNotificationsAsync } from '../utils/NotificationService';
+import { ScrollView } from 'react-native';
 
 function AddMedicineScreen({ navigation }) {
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
+
   const { addMedicine } = useMedicines();
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -27,64 +32,69 @@ function AddMedicineScreen({ navigation }) {
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-//Проверка на правильность написания пунктов при добавлении экрана
-const handleAdd = async () => {
-  if (!name || !type || !dose) {
-    Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
-    return;
-  }
-//Создание объекта с данными лекарств что вписал user
-  const newMedicine = {
-    name,
-    type,
-    dose,
-    image,
-    description,
-    reminder_time: reminderTime.toISOString(),
-  };
-
-  try {
-    setLoading(true);
-
-    //Вызов добавления лекарств и потом переход к СупаБейз через контекст
-    const { data, error } = await addMedicine(newMedicine);
-    if (error) {
-      Alert.alert("Błąd", error.message || "Nie udało się dodać leku.");
+  //Проверка на правильность написания пунктов при добавлении экрана
+  const handleAdd = async () => {
+    if (!name || !type || !dose) {
+      Alert.alert("Błąd", "Wprowadź nazwę, typ i dawkę leku.");
       return;
     }
-//Просим разрешение на уведомления + вычесляем сколько времени до напоминания и планируем пуш уведомления
-    await registerForPushNotificationsAsync();
 
-    const secondsUntilReminder = Math.max(
-      1,
-      Math.floor((reminderTime.getTime() - Date.now()) / 1000)
-    );
+    //Создание объекта с данными лекарств что вписал user
+    const newMedicine = {
+      name,
+      type,
+      dose,
+      image,
+      description,
+      reminder_time: reminderTime.toISOString(),
+    };
 
-    await schedulePushNotification({
-      title: 'Mój Lek',
-      body: `Czas wziąć lek: ${name}`,
-      seconds: secondsUntilReminder
-    });
+    try {
+      setLoading(true);
 
-//обнуляем форму и возвращаем на предыдущий экран
-    setName('');
-    setType('');
-    setDose('');
-    setImage('');
-    setDescription('');
-    setReminderTime(new Date());
-    navigation.goBack();
-  } catch (error) {
-    console.error("Add medicine error:", error);
-    Alert.alert("Błąd", "Nieoczekiwany problem.");
-  } finally {
-    setLoading(false);
-  }
-};
-  return (
+      //Вызов добавления лекарств 
+      const { data, error } = await addMedicine(newMedicine);
+      if (error) {
+        Alert.alert("Błąd", error.message || "Nie udało się dodać leku.");
+        return;
+      }
 
-    //Стили строк
-    <View style={styles.container}>
+      //Просим разрешение на уведомления + вычесляем сколько времени до напоминания и планируем пуш уведомления
+      await registerForPushNotificationsAsync();
+
+      const secondsUntilReminder = Math.max(
+        1,
+        Math.floor((reminderTime.getTime() - Date.now()) / 1000)
+      );
+
+      await schedulePushNotification({
+        title: 'Mój Lek',
+        body: `Czas wziąć lek: ${name}`,
+        seconds: secondsUntilReminder
+      });
+
+      //обнуляем форму и возвращаем на предыдущий экран
+      setName('');
+      setType('');
+      setDose('');
+      setImage('');
+      setDescription('');
+      setReminderTime(new Date());
+      navigation.goBack();
+    } catch (error) {
+      console.error("Add medicine error:", error);
+      Alert.alert("Błąd", "Nieoczekiwany problem.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+return (
+  <View style={{ flex: 1, backgroundColor: '#1c1c1c' }}>
+    <ScrollView
+      contentContainerStyle={isPortrait ? styles.container : styles.containerLandscape}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Dodaj lek</Text>
 
       <TextInput style={styles.input} placeholder="Nazwa leku" value={name} onChangeText={setName} placeholderTextColor="#ccc" />
@@ -115,7 +125,6 @@ const handleAdd = async () => {
       )}
 
       <TouchableOpacity
-      //Стиль загрузки и кнопки Добавить
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={handleAdd}
         disabled={loading}
@@ -126,23 +135,56 @@ const handleAdd = async () => {
           <Text style={styles.buttonText}>Dodaj</Text>
         )}
       </TouchableOpacity>
-    </View>
-  );
+    </ScrollView>
+  </View>
+);
 }
 
 //Стили экрана
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#1c1c1c' },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, color: '#00ff99' },
-  input: {
-    backgroundColor: '#333',
-    color: '#fff',
-    borderColor: '#00ff99',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10
+  container: {
+    flex: 1,
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#1c1c1c'
   },
+
+  containerScrollLandscape: {
+  padding: 40,
+  backgroundColor: '#1c1c1c',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+containerLandscape: {
+  flex: 1,
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  alignItems: 'flex-start',
+  backgroundColor: '#1c1c1c',
+  padding: 40,
+  gap: 10
+},
+
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#00ff99'
+  },
+input: {
+  backgroundColor: '#2c2c2c',
+  color: '#fff',
+  padding: 12,
+  borderRadius: 10,
+  marginBottom: 12,
+  fontSize: 16, 
+  borderColor: '#00ff99',
+  borderWidth: 1,
+  minWidth: '100%'     
+},
+
   timeButton: {
     backgroundColor: '#444',
     padding: 12,

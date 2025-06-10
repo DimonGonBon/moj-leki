@@ -7,10 +7,12 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  useWindowDimensions, // добавлено для адаптации к горизонтальному экрану и верт
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
+//Компонент регистрации пользователя, использует AuthContext и навигацию
 export default function RegisterScreen() {
   const { register } = useAuth();
   const navigation = useNavigation();
@@ -18,39 +20,44 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-const handleRegister = async () => { //Так же как у Логина асинхроная функция которая вызывается при нажатии на кнопку регистрации
-  if (!email || !password) { // Проверка, если что то не было написано выводит ошибку
-    Alert.alert('Błąd', 'Wprowadź email i hasło');
-    return;
-  }
+  const { width, height } = useWindowDimensions(); // получаем размеры экрана
+  const isPortrait = height >= width; // определяем текущую ориентацию
 
-  try {
-    setIsLoading(true);
-    const { error } = await register(email, password); //Вызывается функция регистра и отправляет данные на базу супабазе
-
-    if (error) {
-      const msg = error.message.toLowerCase(); //Если была ошибка, анализируем текст и исходя из ошибки выводим алерт
-      if (msg.includes('user already registered')) {
-        Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
-      } else if (msg.includes('network')) {
-        Alert.alert('Brak połączenia', 'Sprawdź swoje połączenie internetowe.');
-      } else {
-        Alert.alert('Błąd rejestracji', error.message || 'Coś poszło nie tak.');
-      }
-    } else {
-      Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!'); //Если всё успешно выводится сообщение и переход к экрану входа
-      navigation.navigate('Login');
+  const handleRegister = async () => { 
+    //Так же как у Логина — асинхронная функция вызывается при нажатии на кнопку регистрации
+    if (!email || !password) { // Проверка: если email или пароль не введены — выводим ошибку
+      Alert.alert('Błąd', 'Wprowadź email i hasło');
+      return;
     }
-  } catch (e) {
-    Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
-  } finally {
-    setIsLoading(false);
-  }
-};
 
-//Стили
-  return (
-    <View style={styles.container}>
+    try {
+      setIsLoading(true);
+      const { error } = await register(email, password); // пробуем зарегистрировать пользователя через Supabase
+
+      if (error) {
+        const msg = error.message.toLowerCase(); // анализируем сообщение ошибки
+        if (msg.includes('user already registered')) {
+          Alert.alert('Błąd', 'Ten email jest już zarejestrowany.');
+        } else if (msg.includes('network')) {
+          Alert.alert('Brak połączenia', 'Sprawdź swoje połączenie internetowe.');
+        } else {
+          Alert.alert('Błąd rejestracji', error.message || 'Coś poszło nie tak.');
+        }
+      } else {
+        // Если регистрация прошла успешно
+        Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
+        navigation.navigate('Login'); // переход к экрану входа
+      }
+    } catch (e) {
+      Alert.alert('Błąd', 'Wystąpił nieoczekiwany problem.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+return (
+  <View style={isPortrait ? styles.container : styles.containerLandscape}>
+    <View style={styles.formWrapper}>
       <Text style={styles.title}>Zarejestruj się</Text>
 
       <TextInput
@@ -87,9 +94,14 @@ const handleRegister = async () => { //Так же как у Логина аси
         <Text style={styles.linkText}>Zaloguj się</Text>
       </TouchableOpacity>
     </View>
-  );
+  </View>
+);
+
 }
 
+
+
+//Стили для портретной и горизонтальной ориентации
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -97,26 +109,50 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
+  
+  formWrapper: {
+  width: '100%',
+  maxWidth: 400,
+  alignSelf: 'center',
+},
+
+  containerLandscape: {
+    flex: 1,
+    backgroundColor: '#1c1c1c',
+    padding: 40,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
   title: {
     fontSize: 26,
     color: '#00cc66',
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
+    width: '100%'
   },
   input: {
     backgroundColor: '#2c2c2c',
     color: '#fff',
-    padding: 15,
+    padding: 12,
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 12,
+    fontSize: 16,
+    width: '100%',
+    maxWidth: 300,
+    alignSelf: 'center',
   },
   button: {
     backgroundColor: '#00cc66',
-    padding: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 15,
+    width: '100%',
+    maxWidth: 300,
+    alignSelf: 'center',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -130,5 +166,7 @@ const styles = StyleSheet.create({
     color: '#00aaff',
     textAlign: 'center',
     marginTop: 10,
+    width: '100%',
   },
 });
+
