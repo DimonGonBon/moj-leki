@@ -1,4 +1,4 @@
-# Mój Leki — Aplikacja mobilna do zarządzania lekami
+# Mój Leki — Aplikacja mobilna do zarządzania lekami.
 
  Aplikacja mobilna stworzona w React Native do zarządzania przyjmowaniem leków, ustawiania przypomnień, przeglądania szczegółów oraz obsługi kont użytkowników.
 
